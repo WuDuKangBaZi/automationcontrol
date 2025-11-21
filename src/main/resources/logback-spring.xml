@@ -1,0 +1,59 @@
+<configuration scan="true">
+
+    <!-- 控制台输出 -->
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 普通日志文件 -->
+    <appender name="File" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/app.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/app.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 单独的 ERROR 文件 -->
+    <appender name="ErrorFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/error.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+        <!-- 只记录 ERROR 级别日志 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- 异步写入普通日志 -->
+    <appender name="AsyncFile" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="File"/>
+    </appender>
+
+    <!-- 异步写入 ERROR 日志 -->
+    <appender name="AsyncErrorFile" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="ErrorFile"/>
+    </appender>
+
+    <!-- root 日志 -->
+    <root level="INFO">
+        <appender-ref ref="Console"/>
+        <appender-ref ref="AsyncFile"/>
+        <appender-ref ref="AsyncErrorFile"/>
+    </root>
+
+    <!-- 指定包的日志级别 -->
+    <logger name="com.felixstudio.automationcontrol" level="DEBUG"/>
+</configuration>
