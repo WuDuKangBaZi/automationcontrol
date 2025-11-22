@@ -1,14 +1,17 @@
 package com.felixstudio.automationcontrol.dingTalk;
 
 import com.alibaba.fastjson2.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Component
 public class DingtalkUtil {
     @Value("${dingtalk.appKey}")
@@ -50,6 +53,7 @@ public class DingtalkUtil {
         HttpHeaders headers = new HttpHeaders();
         applyAuthHeader(headers);
         headers.setContentType(MediaType.APPLICATION_JSON);
+        log.debug(message.toString());
         HttpEntity<JSONObject> entity = new HttpEntity<>(message, headers);
         ResponseEntity<String> responseEntity = restTemplate.postForEntity(url, entity, String.class);
         return JSONObject.parseObject(responseEntity.getBody());
@@ -85,5 +89,9 @@ public class DingtalkUtil {
 
         this.cachedToken = token;
         this.expireAtEpochMs = System.currentTimeMillis() + ttlSec * 1000L;
+    }
+
+    public RestOperations getRestTemplate() {
+        return this.restTemplate;
     }
 }

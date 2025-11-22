@@ -17,7 +17,7 @@ public class VerifyController {
     @PostMapping("/sendSmSCode")
     public ApiResponse<?> sendSmSCode(@RequestBody VerifyMsg msg){
         // 流程名称、手机号、发送到指定的ID的群聊 该ID在网页端可以查询到
-        return ApiResponse.success(verifyService.sendSmSCode(msg.getFlowName(), msg.getVerifyPhone(), msg.getChanelId()));
+        return ApiResponse.success(verifyService.sendSmSCode(msg.getFlowName(), msg.getVerifyPhone(), msg.getShortName()));
     }
     @GetMapping("/query/{shortCode}")
     public ApiResponse<?> queryByShortCode(@PathVariable String shortCode) {

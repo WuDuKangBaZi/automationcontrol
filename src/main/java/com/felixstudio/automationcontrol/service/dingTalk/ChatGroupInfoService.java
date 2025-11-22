@@ -17,4 +17,7 @@ public class ChatGroupInfoService {
                 java.util.Map.of("short_name", shortName)
         ).stream().findFirst().orElse(null);
     }
+    public int saveGroupInfo(ChatGroupInfo chatGroupInfo){
+        return chatGroupInfoMapper.insert(chatGroupInfo);
+    }
 }

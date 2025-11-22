@@ -6,5 +6,5 @@ import lombok.Data;
 public class VerifyMsg {
     private String flowName;
     private String verifyPhone;
-    private String chanelId;
+    private String shortName;
 }

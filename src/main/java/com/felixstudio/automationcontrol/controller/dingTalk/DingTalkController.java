@@ -2,13 +2,16 @@ package com.felixstudio.automationcontrol.controller.dingTalk;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.felixstudio.automationcontrol.common.ApiResponse;
-import com.felixstudio.automationcontrol.entity.dingtalkEntity.VerifyMsg;
+import com.felixstudio.automationcontrol.dto.dingTalk.MessageDTO;
 import com.felixstudio.automationcontrol.service.dingTalk.DingTalkService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
+@Slf4j
 @RestController
 @RequestMapping("/api/dingtalk")
 public class DingTalkController {
@@ -19,13 +22,27 @@ public class DingTalkController {
         this.dingTalkService = dingTalkService;
     }
 
-    @PostMapping("/sendMsg")
-    public ApiResponse<?> sendMsg(@RequestBody JSONObject message){
-        String msgContent = message.getString("message");
-        String shortName = message.getString("groupShort");
-        return ApiResponse.success(dingTalkService.sendMsg(msgContent,shortName));
+    @PostMapping("/send")
+    public ApiResponse<?> sendMsg(@RequestBody MessageDTO messageDTO){
+        return ApiResponse.success(dingTalkService.sendMsg(messageDTO.getMessage(), messageDTO.getGroupShort()));
     }
 
+    @PostMapping(value = "/send",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<?> sendFileMsg(@RequestPart("file") MultipartFile file,@RequestPart("message") String message,
+                                      @RequestPart("groupShort") String groupShort,
+                                      @RequestPart("fileType") String fileType){
+        try{
+            MessageDTO messageDTO = new MessageDTO(){
+                {
+                    setMessage(message);
+                    setGroupShort(groupShort);
+                    setFileType(fileType);
+                }
+            };
+            return ApiResponse.success(dingTalkService.sendFileMsg(file,messageDTO));
+        }catch (Exception e){
+            log.error(e.getMessage(),e);
+            return ApiResponse.failure(500,e.getMessage());
         }
     }
 }

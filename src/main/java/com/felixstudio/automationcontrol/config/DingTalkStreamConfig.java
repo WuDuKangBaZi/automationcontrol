@@ -35,7 +35,6 @@ public class DingTalkStreamConfig {
     @Bean
     public OpenDingTalkCallbackListener<JSONObject, JSONObject> botMessageListener() {
         return payload -> {
-            log.debug(payload.toString());
             JSONObject textObject = payload.getJSONObject("text");
             String openThreadId = payload.getString("openThreadId");
             if (textObject.containsKey("isReplyMsg")) {
@@ -47,7 +46,6 @@ public class DingTalkStreamConfig {
                 }
 
             }
-            log.info(textObject.getString("content"));
             String content = textObject.getString("content").trim();
             if (content.startsWith("注册")) {
                 String shortName = "";
