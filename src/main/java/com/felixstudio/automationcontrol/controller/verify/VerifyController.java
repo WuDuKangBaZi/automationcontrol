@@ -3,7 +3,6 @@ package com.felixstudio.automationcontrol.controller.verify;
 import com.felixstudio.automationcontrol.common.ApiResponse;
 import com.felixstudio.automationcontrol.entity.dingtalkEntity.VerifyMsg;
 import com.felixstudio.automationcontrol.service.verify.VerifyService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 

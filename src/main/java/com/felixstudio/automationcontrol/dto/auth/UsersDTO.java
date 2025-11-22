@@ -4,7 +4,6 @@ import com.felixstudio.automationcontrol.entity.auth.Users;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class UsersDTO extends Users {
