@@ -18,8 +18,6 @@ public class DingtalkUtil {
     private String appKey;
     @Value("${dingtalk.appSecret}")
     private String appSecret;
-    @Value("${dingtalk.captch}")
-    private String captcha;
     private static final String TOKEN_URL = "https://api.dingtalk.com/v1.0/oauth2/accessToken";
     private static final long REFRESH_BUFFER_SECONDS = 120;
     private final RestTemplate restTemplate = new RestTemplate();
@@ -62,32 +60,30 @@ public class DingtalkUtil {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        Map<String, String> body = new HashMap<>();
+        JSONObject body = new JSONObject();
         appKey = "dingfhq42qsw2izwrkb4";
         appSecret = "pr91tjS3U7B5VygDYCdFsxvc2O42o0p90ismzIek7HpwW2aZY3cd7nqEAWauAzao";
         body.put("appKey", appKey);
         body.put("appSecret", appSecret);
 
-        HttpEntity<Map<String, String>> req = new HttpEntity<>(body, headers);
-        ResponseEntity<Map> resp = restTemplate.postForEntity(TOKEN_URL, req, Map.class);
+        HttpEntity<JSONObject> req = new HttpEntity<>(body, headers);
+        ResponseEntity<JSONObject> resp = restTemplate.postForEntity(TOKEN_URL, req, JSONObject.class);
 
         if (!resp.getStatusCode().is2xxSuccessful() || resp.getBody() == null) {
             throw new IllegalStateException("获取钉钉 accessToken 失败，HTTP=" + resp.getStatusCode());
         }
 
-        Object tokenObj = resp.getBody().get("accessToken");
-        Object expireInObj = resp.getBody().get("expireIn"); // 单位：秒
+        String accessToken = resp.getBody().getString("accessToken");
+        long expireIn = resp.getBody().getLongValue("expireIn"); // 单位：秒
 
-        if (!(tokenObj instanceof String) || !(expireInObj instanceof Number)) {
+        if (accessToken == null) {
             throw new IllegalStateException("获取钉钉 accessToken 返回数据异常");
         }
 
-        String token = (String) tokenObj;
-        long expireInSec = ((Number) expireInObj).longValue();
-        long buffer = Math.min(REFRESH_BUFFER_SECONDS, Math.max(0, expireInSec / 10)); // 动态留出缓冲
-        long ttlSec = Math.max(1, expireInSec - buffer);
+        long buffer = Math.min(REFRESH_BUFFER_SECONDS, Math.max(0, expireIn / 10)); // 动态留出缓冲
+        long ttlSec = Math.max(1, expireIn - buffer);
 
-        this.cachedToken = token;
+        this.cachedToken = accessToken;
         this.expireAtEpochMs = System.currentTimeMillis() + ttlSec * 1000L;
     }
 

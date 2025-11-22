@@ -1,6 +1,5 @@
 package com.felixstudio.automationcontrol.controller.verify;
 
-import com.alibaba.fastjson2.JSONObject;
 import com.felixstudio.automationcontrol.common.ApiResponse;
 import com.felixstudio.automationcontrol.entity.dingtalkEntity.VerifyMsg;
 import com.felixstudio.automationcontrol.service.verify.VerifyService;
@@ -11,8 +10,13 @@ import org.springframework.web.bind.annotation.*;
 @RestController()
 @RequestMapping("/api/verify")
 public class VerifyController {
-    @Autowired
-    private VerifyService verifyService;
+
+    private final VerifyService verifyService;
+
+    public VerifyController(VerifyService verifyService) {
+        this.verifyService = verifyService;
+    }
+
     // 发起短信验证码请求
     @PostMapping("/sendSmSCode")
     public ApiResponse<?> sendSmSCode(@RequestBody VerifyMsg msg){

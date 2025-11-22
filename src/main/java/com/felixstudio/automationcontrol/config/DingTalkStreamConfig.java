@@ -2,21 +2,16 @@
 package com.felixstudio.automationcontrol.config;
 
 import com.alibaba.fastjson2.JSONObject;
-import com.dingtalk.open.app.api.GenericEventListener;
 import com.dingtalk.open.app.api.OpenDingTalkClient;
 import com.dingtalk.open.app.api.OpenDingTalkStreamClientBuilder;
 import com.dingtalk.open.app.api.callback.OpenDingTalkCallbackListener;
-import com.dingtalk.open.app.api.message.GenericOpenDingTalkEvent;
 import com.dingtalk.open.app.api.security.AuthClientCredential;
-import com.dingtalk.open.app.stream.protocol.event.EventAckStatus;
 import com.felixstudio.automationcontrol.service.dingTalk.DingTalkMenu;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.Objects;
 
 @Slf4j
 @Configuration

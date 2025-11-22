@@ -1,13 +1,11 @@
 package com.felixstudio.automationcontrol.service.verify;
 
 import com.alibaba.fastjson2.JSONObject;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.felixstudio.automationcontrol.dingTalk.DingTalkMessageBuilder;
 import com.felixstudio.automationcontrol.dingTalk.DingtalkUtil;
 import com.felixstudio.automationcontrol.entity.dingtalkEntity.ChatGroupInfo;
 import com.felixstudio.automationcontrol.entity.verify.BusinessSmsInfo;
 import com.felixstudio.automationcontrol.mapper.dingTalk.ChatGroupInfoMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

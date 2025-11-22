@@ -12,7 +12,7 @@ import java.util.List;
 @Mapper
 public interface UserRolesMapper extends BaseMapper<UserRoles> {
     @Select("""
-    select r.role_name from roles r 
+    select r.role_name from roles r
     left join user_roles ur on r.id = ur.role_id
     where ur.user_id = #{id}
 """)

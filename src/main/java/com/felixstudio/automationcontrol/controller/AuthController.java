@@ -13,7 +13,6 @@ import com.felixstudio.automationcontrol.service.auth.UserRolesService;
 import com.felixstudio.automationcontrol.service.auth.UsersService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -69,7 +68,7 @@ public class AuthController {
 
                     return ApiResponse.success(dto);
                 })
-                .orElse(ApiResponse.<LoginResponseDTO>failure(401, "账号或密码错误!"));
+                .orElse(ApiResponse.failure(401, "账号或密码错误!"));
     }
 
     @PostMapping("/update")
@@ -130,7 +129,12 @@ public class AuthController {
                 return ApiResponse.failure(400, "上传文件不能为空");
             }
             File dir = new File(uploadDir);
-            if (!dir.exists()) dir.mkdirs();
+            if (!dir.exists()){
+                boolean createRet = dir.mkdirs();
+                if(!createRet){
+                    return ApiResponse.failure(500, "创建上传目录失败");
+                }
+            }
             // 生成唯一文件名
             String ext = StringUtils.getFilenameExtension(file.getOriginalFilename());
             String filename = UUID.randomUUID() + "." + ext;

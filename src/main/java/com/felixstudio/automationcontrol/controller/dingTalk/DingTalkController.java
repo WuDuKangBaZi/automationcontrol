@@ -1,6 +1,5 @@
 package com.felixstudio.automationcontrol.controller.dingTalk;
 
-import com.alibaba.fastjson2.JSONObject;
 import com.felixstudio.automationcontrol.common.ApiResponse;
 import com.felixstudio.automationcontrol.dto.dingTalk.MessageDTO;
 import com.felixstudio.automationcontrol.service.dingTalk.DingTalkService;
@@ -8,8 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 
 @Slf4j
 @RestController

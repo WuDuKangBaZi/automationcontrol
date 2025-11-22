@@ -1,19 +1,16 @@
 package com.felixstudio.automationcontrol.service.dingTalk;
 
 import com.alibaba.fastjson2.JSONObject;
-import com.dingtalk.open.app.api.OpenDingTalkClient;
 import com.felixstudio.automationcontrol.dingTalk.DingTalkMessageBuilder;
 import com.felixstudio.automationcontrol.dingTalk.DingtalkUtil;
 import com.felixstudio.automationcontrol.dto.dingTalk.MessageDTO;
 import com.felixstudio.automationcontrol.entity.dingtalkEntity.ChatGroupInfo;
 import com.felixstudio.automationcontrol.mapper.dingTalk.ChatGroupInfoMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;

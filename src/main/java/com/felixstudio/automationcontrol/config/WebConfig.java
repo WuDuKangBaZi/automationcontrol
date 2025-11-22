@@ -1,6 +1,7 @@
 // WebConfig.java
 package com.felixstudio.automationcontrol.config;
 
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +22,7 @@ public class WebConfig {
         return new WebMvcConfigurer() {
 
             @Override
-            public void addResourceHandlers(ResourceHandlerRegistry registry) {
+            public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
                 registry.addResourceHandler("/uploads/**")
                         .addResourceLocations("file:" + uploadDir)
                         .setCachePeriod(60 * 60 * 24 * 30)
