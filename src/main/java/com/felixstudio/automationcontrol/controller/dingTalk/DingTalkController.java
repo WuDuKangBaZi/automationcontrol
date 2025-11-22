@@ -26,13 +26,6 @@ public class DingTalkController {
         return ApiResponse.success(dingTalkService.sendMsg(msgContent,shortName));
     }
 
-    @PostMapping("/verifyMsg")
-    public ApiResponse<?> verifyMsg(@RequestBody VerifyMsg msg){
-        // 生成唯一短位key
-        return null;
-    }
-    @PostMapping("/getVerify")
-    public ApiResponse<?> getVerify(@RequestBody JSONObject message){
-        return null;
+        }
     }
 }
