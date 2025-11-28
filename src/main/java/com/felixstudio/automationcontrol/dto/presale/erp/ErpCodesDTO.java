@@ -1,4 +1,4 @@
-package com.felixstudio.automationcontrol.dto.presale;
+package com.felixstudio.automationcontrol.dto.presale.erp;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

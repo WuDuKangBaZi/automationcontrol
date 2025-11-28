@@ -3,6 +3,7 @@ package com.felixstudio.automationcontrol.controller.presaleMain;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.felixstudio.automationcontrol.common.ApiResponse;
+import com.felixstudio.automationcontrol.dto.presale.PresaleMainQueryDTO;
 import com.felixstudio.automationcontrol.entity.presale.PresaleMain;
 import com.felixstudio.automationcontrol.service.presale.PresaleMainService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,5 +33,9 @@ public class PresaleMainController {
         int status = json.getIntValue("status");
         JSONArray taskResult = json.getJSONArray("result");
         return ApiResponse.success(service.setErpResult(taskId,status,taskResult));
+    }
+    @PostMapping("/search")
+    public ApiResponse<?> search(@RequestBody PresaleMainQueryDTO queryDTO) {
+        return ApiResponse.success(service.search(queryDTO));
     }
 }

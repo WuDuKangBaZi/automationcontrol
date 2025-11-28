@@ -3,7 +3,11 @@ package com.felixstudio.automationcontrol.service.presale.impl;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.felixstudio.automationcontrol.dto.presale.PresaleMainDTO;
+import com.felixstudio.automationcontrol.dto.presale.PresaleMainQueryDTO;
 import com.felixstudio.automationcontrol.entity.presale.PresaleMain;
 import com.felixstudio.automationcontrol.entity.task.TaskJob;
 import com.felixstudio.automationcontrol.mapper.presale.PresaleMainMapper;
@@ -11,12 +15,14 @@ import com.felixstudio.automationcontrol.service.presale.PresaleMainService;
 import com.felixstudio.automationcontrol.service.presale.erp.PresaleErpCodeService;
 import com.felixstudio.automationcontrol.service.task.TaskJobService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -86,6 +92,17 @@ public class PresaleMainServiceImpl extends ServiceImpl<PresaleMainMapper, Presa
         taskJob.setTaskStatus(status);
         taskJobService.updateById(taskJob);
         return presaleErpCodeService.batchInsertPresaleErpCodeAndCreateTaskJob(taskJob, taskResult);
+    }
+
+    @Override
+    public Page<PresaleMainDTO> search(PresaleMainQueryDTO queryDTO) {
+        log.info(String.valueOf(queryDTO.getConfigDate()));
+        log.info("pageNo={}, pageSize={}", queryDTO.getPageNo(), queryDTO.getPageSize());
+        if(Objects.equals(queryDTO.getHandlingMethod(), "全部")){
+            queryDTO.setHandlingMethod(null);
+        }
+        Page<PresaleMainDTO> page = new Page<>(queryDTO.getPageNo(), queryDTO.getPageSize());
+        return this.getBaseMapper().queryPresaleMainDTOs(page, queryDTO);
     }
 
 }

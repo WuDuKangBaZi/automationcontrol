@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.felixstudio.automationcontrol.mapper.presale.PresaleMainMapper">
+    <select id="queryPresaleMainDTOs" resultType="com.felixstudio.automationcontrol.dto.presale.PresaleMainDTO">
+        WITH erp_task_stats AS (
+        SELECT
+        pec.presale_id,
+        COUNT(te.id) AS erp_task_total,
+        COUNT(*) FILTER (WHERE te.task_status = 2) AS erp_task_success,
+        COUNT(*) FILTER (WHERE te.task_status = 1) AS erp_task_running,
+        COUNT(*) FILTER (WHERE te.task_status = -1) AS erp_task_fail
+        FROM presale_erp_code pec
+        LEFT JOIN task_job te ON pec.id = te.ref_id
+        GROUP BY pec.presale_id
+        ),
+        main_task_stats AS (
+        SELECT
+        ref_id AS presale_id,
+        COUNT(id) AS main_task_total,
+        COUNT(*) FILTER (WHERE task_status = 2) AS main_task_success,
+        COUNT(*) FILTER (WHERE task_status = 1) AS main_task_running,
+        COUNT(*) FILTER (WHERE task_status = -1) AS main_task_fail
+        FROM task_job
+        GROUP BY ref_id
+        )
+        SELECT
+        pm.id,
+        concat(pm.config_date,' ',pm.config_time) as configDateTime,
+        pm.goods_code,
+        pm.config_time,
+        pm.goods_name,
+        pm.shortage_reason,
+        pm.presale_end_time,
+        pm.handling_method,
+        pm.person_in_charge,
+        COALESCE(mts.main_task_total,0) AS main_task_total,
+        COALESCE(mts.main_task_success,0) AS main_task_success,
+        COALESCE(mts.main_task_running,0) AS main_task_running,
+        COALESCE(mts.main_task_fail,0) AS main_task_fail,
+        COALESCE(ets.erp_task_total,0) AS erp_task_total,
+        COALESCE(ets.erp_task_success,0) AS erp_task_success,
+        COALESCE(ets.erp_task_running,0) AS erp_task_running,
+        COALESCE(ets.erp_task_fail,0) AS erp_task_fail
+        FROM presale_main pm
+        LEFT JOIN main_task_stats mts ON pm.id = mts.presale_id
+        LEFT JOIN erp_task_stats ets ON pm.id = ets.presale_id
+        <where>
+            <if test="presaleMainQuery.configDate != null">
+                AND pm.config_date = #{presaleMainQuery.configDate}
+            </if>
+            <if test="presaleMainQuery.goodsCode != null and presaleMainQuery.goodsCode != ''">
+                AND pm.goods_code = #{presaleMainQuery.goodsCode}
+            </if>
+            <if test="presaleMainQuery.handlingMethod != null and presaleMainQuery.handlingMethod != ''">
+                AND pm.handling_method = #{presaleMainQuery.handlingMethod}
+            </if>
+        </where>
+        ORDER BY pm.config_date DESC, pm.config_time DESC
+    </select>
+</mapper>
