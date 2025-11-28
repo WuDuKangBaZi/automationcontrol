@@ -23,7 +23,7 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         response.setContentType("application/json;charset=UTF-8");
 
-        ApiResponse<?> body = ApiResponse.failure(403, "Access denied: insufficient permissions");
+        ApiResponse<?> body = ApiResponse.failure(401, "Access denied: insufficient permissions");
 
         response.getWriter().write(objectMapper.writeValueAsString(body));
     }

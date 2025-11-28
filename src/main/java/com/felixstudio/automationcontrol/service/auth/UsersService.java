@@ -73,9 +73,14 @@ public class UsersService {
     }
 
     public int updateUser(Users user) {
-        if(user.getPassword() != null && !user.getPassword().isEmpty()) {
-            String encodedPassword = passwordEncoder.encode(user.getPassword());
-            user.setPassword(encodedPassword);
+        String pwd = user.getPassword();
+
+        if (pwd != null) {
+            if (pwd.isEmpty()) {
+                user.setPassword(null); // 避免覆盖原密码
+            } else {
+                user.setPassword(passwordEncoder.encode(pwd));
+            }
         }
        return userMapper.update(user, new LambdaQueryWrapper<Users>().eq(Users::getId, user.getId()));
     }
@@ -93,5 +98,11 @@ public class UsersService {
 
     public int deleteByUserId(Long userId) {
         return userMapper.deleteById(userId);
+    }
+
+    public Users getUserByAccount(String account) {
+        return userMapper.selectOne(
+                new LambdaQueryWrapper<Users>().eq(Users::getAccount, account)
+        );
     }
 }

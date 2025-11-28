@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.felixstudio.automationcontrol.common.ApiResponse;
 import com.felixstudio.automationcontrol.dto.LoginResponseDTO;
+import com.felixstudio.automationcontrol.dto.auth.UserInfoDTO;
 import com.felixstudio.automationcontrol.dto.auth.UserRegisterDTO;
 import com.felixstudio.automationcontrol.dto.auth.UsersDTO;
 import com.felixstudio.automationcontrol.entity.auth.Users;
@@ -18,10 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/auth")
@@ -45,25 +44,13 @@ public class AuthController {
         return userService.validateLogin(userInput.getAccount(), userInput.getPassword())
                 .map(dbUser -> {
                     if (dbUser.getStatus() != null && dbUser.getStatus() == 0) {
-                        return ApiResponse.<LoginResponseDTO>failure(403, "该账户已被禁用!");
+                        return ApiResponse.<LoginResponseDTO>failure(401, "该账户已被禁用!");
                     }
-
-                    List<String> roles = userRolesService.getRolesByUserId(dbUser.getId());
-                    List<String> permissions = permissionService.getPermissionsByUserId(dbUser.getId());
-
-                    String token = jwtUtils.generateToken(dbUser.getAccount());
-                    long expiresAt = System.currentTimeMillis() + jwtUtils.getExpiration();
-
+                    String token = jwtUtils.generateAccessToken(dbUser.getAccount());
+                    String refreshToken = jwtUtils.generateRefreshToken(dbUser.getAccount());
                     LoginResponseDTO dto = LoginResponseDTO.builder()
-                            .userId(dbUser.getId().toString())
-                            .account(dbUser.getAccount())
-                            .username(dbUser.getUsername())
-                            .roles(roles)
-                            .permissions(permissions)
                             .token(token)
-                            .expiresAt(expiresAt)
-                            .avatar(dbUser.getAvatarUrl())
-                            .phone(dbUser.getPhone())
+                            .refreshToken(refreshToken)
                             .build();
 
                     return ApiResponse.success(dto);
@@ -71,9 +58,49 @@ public class AuthController {
                 .orElse(ApiResponse.failure(401, "账号或密码错误!"));
     }
 
+    @PostMapping("/info")
+    public ApiResponse<?> userInfo(@RequestBody JsonNode node) {
+        String token = node.get("token").asText();
+        if (!jwtUtils.validateToken(token)) {
+            return ApiResponse.failure(401, "无效的令牌");
+        }
+        String account = jwtUtils.extractUsername(token);
+        Users user = userService.getUserByAccount(account);
+        if (user == null) {
+            return ApiResponse.failure(404, "用户不存在");
+        }
+        List<String> roles = userRolesService.getRolesByUserId(user.getId());
+        List<String> permissions = permissionService.getPermissionsByUserId(user.getId());
+        UserInfoDTO userDTO = new UserInfoDTO().forEntity(user);
+        userDTO.setRoles(roles);
+        userDTO.setPermissions(permissions);
+        return ApiResponse.success(userDTO);
+    }
+
+    @PostMapping("/refreshToken")
+    public ApiResponse<?> refreshToken(@RequestBody JsonNode node) {
+        String refreshToken = node.get("refreshToken").asText();
+
+        // 校验 Refresh Token
+        if (!jwtUtils.validateToken(refreshToken)) {
+            return ApiResponse.failure(401, "无效的刷新令牌");
+        }
+        String username = jwtUtils.extractUsername(refreshToken);
+        String newAccessToken = jwtUtils.generateAccessToken(username);
+        log.info("Generating new access token for user: {}", username);
+        String newRefreshToken = jwtUtils.generateRefreshToken(username);
+
+        // 返回双 Token 结构
+        return ApiResponse.success(Map.of(
+                "accessToken", newAccessToken,
+                "refreshToken", newRefreshToken,
+                "expiresAt", System.currentTimeMillis() + jwtUtils.getAccessTokenExpiration()
+        ));
+    }
+
     @PostMapping("/update")
     public ApiResponse<?> updateUser(@RequestBody Users userInput) {
-        if(Objects.equals(userInput.getAvatarUrl(), "")){
+        if (Objects.equals(userInput.getAvatarUrl(), "")) {
             userInput.setAvatarUrl(null);
         }
         int updateResult = userService.updateUser(userInput);
@@ -94,16 +121,17 @@ public class AuthController {
             return ApiResponse.failure(500, "删除失败");
         }
     }
+
     @PostMapping("/saveUser")
     public ApiResponse<?> update(@RequestBody UserRegisterDTO user) {
         if (user.getUsers().getId() == null) {
-            if(userService.checkExists(user.getUsers().getAccount())){
+            if (userService.checkExists(user.getUsers().getAccount())) {
                 return ApiResponse.failure(400, "账号已存在");
             }
-            if(Objects.equals(user.getUsers().getAvatarUrl(), "")){
+            if (Objects.equals(user.getUsers().getAvatarUrl(), "")) {
                 user.getUsers().setAvatarUrl(null);
             }
-            boolean saveUser = userService.register(user.getUsers(),user.getDeptId());
+            boolean saveUser = userService.register(user.getUsers(), user.getDeptId());
             if (saveUser) {
                 // 关联用户和分组
                 return ApiResponse.success(null, "保存成功");
@@ -129,9 +157,9 @@ public class AuthController {
                 return ApiResponse.failure(400, "上传文件不能为空");
             }
             File dir = new File(uploadDir);
-            if (!dir.exists()){
+            if (!dir.exists()) {
                 boolean createRet = dir.mkdirs();
-                if(!createRet){
+                if (!createRet) {
                     return ApiResponse.failure(500, "创建上传目录失败");
                 }
             }

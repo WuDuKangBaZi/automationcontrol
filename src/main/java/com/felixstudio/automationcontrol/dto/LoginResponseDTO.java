@@ -11,13 +11,14 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginResponseDTO {
-    private String userId;
-    private String account;
-    private String username;
-    private List<String> roles;
-    private List<String> permissions;
+//    private String userId;
+//    private String account;
+//    private String username;
+//    private List<String> roles;
+//    private List<String> permissions;
     private String token;
-    private Long expiresAt;
-    private String avatar;
-    private String phone;
+    private String refreshToken;
+//    private Long expiresAt;
+//    private String avatar;
+//    private String phone;
 }

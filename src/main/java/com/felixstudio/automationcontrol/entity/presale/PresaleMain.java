@@ -1,19 +1,54 @@
 package com.felixstudio.automationcontrol.entity.presale;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
+@TableName("presale_main")
 @Data
 public class PresaleMain {
+
+    @TableId(type = IdType.AUTO)
     private Long id;
-    private String configDateTime;
+
+    @TableField("config_date")
+    private LocalDate configDate;
+
+    @JsonFormat(pattern = "H:mm:ss")
+    @TableField("config_time")
+    private LocalTime configTime;
+
+    @TableField("goods_code")
     private String goodsCode;
+
+    @TableField("goods_name")
     private String goodsName;
-    private String shortageReason; // 缺货原因
-    private String presaleEndTime; // 预售截止时间
-    private String handlingMethod; // 处理方法
-    private String personInCharge; // 责任人
-    private LocalDate createdTime;
-    private LocalDate updatedTime;
+
+    @TableField("shortage_reason")
+    private String shortageReason;
+
+    @TableField("presale_end_time")
+    private LocalDate presaleEndTime;
+
+    @TableField("handling_method")
+    private String handlingMethod;
+
+    @TableField("person_in_charge")
+    private String personInCharge;
+    @TableField("is_active")
+    private Boolean isActive;
+    @TableField("created_at")
+    private LocalDateTime createdAt;
+
+    @TableField("updated_at")
+    private LocalDateTime updatedAt;
 }
+
+

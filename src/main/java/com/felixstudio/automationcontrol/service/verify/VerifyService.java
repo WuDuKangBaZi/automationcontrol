@@ -6,6 +6,7 @@ import com.felixstudio.automationcontrol.dingTalk.DingtalkUtil;
 import com.felixstudio.automationcontrol.entity.dingtalkEntity.ChatGroupInfo;
 import com.felixstudio.automationcontrol.entity.verify.BusinessSmsInfo;
 import com.felixstudio.automationcontrol.mapper.dingTalk.ChatGroupInfoMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,15 +14,18 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class VerifyService {
     private final BusinessSmSInfoService businessSmSInfoService;
     private final SmsShortCodeService smsShortCodeService;
     private final ChatGroupInfoMapper chatGroupInfoMapper;
-    public VerifyService(BusinessSmSInfoService businessSmSInfoService, SmsShortCodeService smsShortCodeService, ChatGroupInfoMapper chatGroupInfoMapper) {
+    private final DingTalkMessageBuilder dingTalkMessageBuilder;
+    public VerifyService(BusinessSmSInfoService businessSmSInfoService, SmsShortCodeService smsShortCodeService, ChatGroupInfoMapper chatGroupInfoMapper, DingTalkMessageBuilder dingTalkMessageBuilder) {
         this.businessSmSInfoService = businessSmSInfoService;
         this.smsShortCodeService = smsShortCodeService;
         this.chatGroupInfoMapper = chatGroupInfoMapper;
+        this.dingTalkMessageBuilder = dingTalkMessageBuilder;
     }
 
     // 发起短信验证码请求
@@ -37,9 +41,9 @@ public class VerifyService {
         String shortCode = smsShortCodeService.createShortCode(businessId);
         // 调用钉钉接口发送短信
         DingtalkUtil dingtalkUtil = new DingtalkUtil();
-        DingTalkMessageBuilder dingTalkMessageBuilder = new DingTalkMessageBuilder();
-        JSONObject msgObject = dingTalkMessageBuilder.sampleText("流程" + flowName + "需要的验证码已经发送到:" + verifyPhone + "，请直接使用回复功能回复本条消息来发送验证码&vek#" + shortCode + "\n请不要回复其他任何非验证码内容\n包括表情回复等操作!", opt.get().getGroupId());
-        dingtalkUtil.sendMessage(msgObject);
+        JSONObject msgObject = dingTalkMessageBuilder.sampleText("流程" + flowName + "需要的验证码已经发送到:" + verifyPhone + "，请直接使用回复功能回复本条消息来发送验证码&vek#" + shortCode , opt.get().getGroupId());
+        JSONObject msgResult = dingtalkUtil.sendMessage(msgObject);
+//        log.info(msgResult.toString());
         BusinessSmsInfo businessSmSInfo = new BusinessSmsInfo();
         businessSmSInfo.setBusinessId(businessId);
         businessSmSInfo.setFlowName(flowName);

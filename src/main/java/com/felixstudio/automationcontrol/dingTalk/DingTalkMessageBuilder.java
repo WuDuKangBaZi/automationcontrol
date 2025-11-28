@@ -9,8 +9,12 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class DingTalkMessageBuilder {
-    @Value("${dingtalk.robotCode}")
-    private String robotCode;
+
+    private final String robotCode;
+
+    public DingTalkMessageBuilder(@Value("${dingtalk.robotCode}") String robotCode) {
+        this.robotCode = robotCode;
+    }
 
     public JSONObject sampleText(String message,String openConversationId){
         JSONObject messageJson = new JSONObject();
@@ -20,7 +24,6 @@ public class DingTalkMessageBuilder {
         msgObject.put("msgKey", "sampleText");
         msgObject.put("robotCode",robotCode);
         msgObject.put("openConversationId", openConversationId);
-        log.info(msgObject.toString());
         return msgObject;
     }
 

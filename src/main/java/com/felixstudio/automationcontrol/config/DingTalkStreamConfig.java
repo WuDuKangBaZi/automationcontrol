@@ -30,6 +30,7 @@ public class DingTalkStreamConfig {
     @Bean
     public OpenDingTalkCallbackListener<JSONObject, JSONObject> botMessageListener() {
         return payload -> {
+//            log.debug(payload.toString());
             JSONObject textObject = payload.getJSONObject("text");
             String openThreadId = payload.getString("openThreadId");
             if (textObject.containsKey("isReplyMsg")) {
@@ -48,7 +49,10 @@ public class DingTalkStreamConfig {
                     // 注册带有参数的逻辑
                     shortName = content.split("#")[1];
                 }
-                dingTalkMenu.saveGroupInfo(payload.getString("openThreadId"), payload.getString("conversationTitle"), shortName, openThreadId);
+                dingTalkMenu.saveGroupInfo(openThreadId, payload.getString("conversationTitle"), shortName, openThreadId);
+            } else if (content.startsWith("webhook")) {
+                String webhookUrl = content.substring(7).trim();
+                dingTalkMenu.saveWebhookUrl(webhookUrl, openThreadId);
             } else {
                 log.info("收到普通消息: {}", textObject.getString("content"));
             }

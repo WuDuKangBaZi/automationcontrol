@@ -26,6 +26,9 @@ public class ChatGroupInfo {
     @TableField("platform")
     private String platform;
 
+    @TableField("webhook_url")
+    private String webhookUrl;
+
     @TableField("create_time")
     private LocalDateTime createTime;
 

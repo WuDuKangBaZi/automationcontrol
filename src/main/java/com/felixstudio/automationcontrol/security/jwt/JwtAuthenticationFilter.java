@@ -16,7 +16,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+
 @Slf4j
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -33,44 +36,53 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain)
             throws ServletException, IOException {
         String path = request.getServletPath();
-        if (path.startsWith("/api/auth/login") || path.startsWith("/uploads/") || path.startsWith("/images/")) {
-            log.debug("Skipping JWT authentication for path: {}", path);
+        log.info("path={}", path);
+        List<String> whiteList = List.of(
+                "/api/auth/login",
+                "/uploads/",
+                "/images/",
+                "/api/auth/refreshToken"
+        );
+        boolean isWhiteListed = whiteList.stream().anyMatch(path::startsWith);
+        if(isWhiteListed || path.contains("/pub/")) {
             filterChain.doFilter(request, response);
             return;
         }
         String header = request.getHeader("Authorization");
         if (header == null || !header.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write(
+                    new ObjectMapper().writeValueAsString(ApiResponse.failure(401, "该接口没有访问权限!"))
+            );
             return;
         }
 
         String token = header.substring(7);
         try {
             if (!jwtUtils.validateToken(token)) {
-                throw new JwtException("Invalid JWT token");
+                throw new JwtException("Token校验失败");
             }
 
             String username = jwtUtils.extractUsername(token);
             UsernamePasswordAuthenticationToken auth =
                     new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
             SecurityContextHolder.getContext().setAuthentication(auth);
-
         } catch (ExpiredJwtException e) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write(
-                    new ObjectMapper().writeValueAsString(ApiResponse.failure(403, "Token expired"))
+                    new ObjectMapper().writeValueAsString(ApiResponse.failure(401, "Token expired"))
             );
             return;
         } catch (JwtException e) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write(
-                    new ObjectMapper().writeValueAsString(ApiResponse.failure(403, e.getMessage()))
+                    new ObjectMapper().writeValueAsString(ApiResponse.failure(401, e.getMessage()))
             );
             return;
         }
-
         filterChain.doFilter(request, response);
     }
 }

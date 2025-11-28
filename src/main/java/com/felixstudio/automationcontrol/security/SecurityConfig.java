@@ -1,6 +1,7 @@
 // SecurityConfig.java
 package com.felixstudio.automationcontrol.security;
 
+import com.felixstudio.automationcontrol.security.config.PubPathRequestMatcher;
 import com.felixstudio.automationcontrol.security.jwt.JwtAccessDeniedHandler;
 import com.felixstudio.automationcontrol.security.jwt.JwtAuthenticationEntryPoint;
 import com.felixstudio.automationcontrol.security.jwt.JwtAuthenticationFilter;
@@ -46,6 +47,8 @@ public class SecurityConfig {
                         .requestMatchers("/images/**").permitAll() // 放行静态资源
                         .requestMatchers("/api/dingtalk/**").permitAll()
                         .requestMatchers("/api/verify/**").permitAll()
+                        .requestMatchers("/api/auth/refreshToken").permitAll()
+                        .requestMatchers(new PubPathRequestMatcher()).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
