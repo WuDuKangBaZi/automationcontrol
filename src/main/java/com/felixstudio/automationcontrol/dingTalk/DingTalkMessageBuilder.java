@@ -1,9 +1,12 @@
 package com.felixstudio.automationcontrol.dingTalk;
 
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 // 构建钉钉消息的工具类
 @Slf4j
@@ -26,7 +29,20 @@ public class DingTalkMessageBuilder {
         msgObject.put("openConversationId", openConversationId);
         return msgObject;
     }
-
+    public JSONObject buildAtMessage(String message, List<String> atMobiles){
+        JSONObject messageBody = new JSONObject();
+        messageBody.put("msgtype", "text");
+        JSONObject textContent = new JSONObject();
+        textContent.put("content", message);
+        messageBody.put("text", textContent);
+        if(atMobiles != null && !atMobiles.isEmpty()){
+            JSONObject atObject = new JSONObject();
+            atObject.put("atMobiles", atMobiles);
+            atObject.put("isAtAll", false);
+            messageBody.put("at", atObject);
+        }
+        return messageBody;
+    }
     public JSONObject buildFileMessage(String mediaId, String originalFilename, String fileType,String openConversationId) {
         JSONObject messageJson = new JSONObject();
         messageJson.put("mediaId", mediaId);

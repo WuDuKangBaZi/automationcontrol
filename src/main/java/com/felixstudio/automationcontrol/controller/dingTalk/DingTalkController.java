@@ -23,7 +23,10 @@ public class DingTalkController {
     public ApiResponse<?> sendMsg(@RequestBody MessageDTO messageDTO){
         return ApiResponse.success(dingTalkService.sendMsg(messageDTO.getMessage(), messageDTO.getGroupShort()));
     }
-
+    @PostMapping("/sendWebHook")
+    public ApiResponse<?> sendWebHookMsg(@RequestBody MessageDTO messageDTO){
+        return ApiResponse.success(dingTalkService.sendWebHookMsg(messageDTO.getMessage(), messageDTO.getGroupShort(),messageDTO.getAtMobiles()));
+    }
     @PostMapping(value = "/send",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<?> sendFileMsg(@RequestPart("file") MultipartFile file,@RequestPart("message") String message,
                                       @RequestPart("groupShort") String groupShort,

@@ -24,4 +24,12 @@ public class BusinessSmSInfoService {
             return null;
         }
     }
+    public BusinessSmsInfo updateById(BusinessSmsInfo businessSmSInfo) {
+        businessSmSInfoMapper.updateById(businessSmSInfo);
+        return businessSmSInfo;
+    }
+
+    public BusinessSmsInfo getById(String businessId) {
+        return businessSmSInfoMapper.selectById(businessId);
+    }
 }

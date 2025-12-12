@@ -29,10 +29,10 @@ public class BusinessSmsInfo {
     @TableField("submit_user")
     private String submitUser;
 
-    @TableField("create_time")
-    private LocalDateTime createTime;
+    @TableField("create_at")
+    private LocalDateTime createAt;
 
-    @TableField("update_time")
-    private LocalDateTime updateTime;
+    @TableField("update_at")
+    private LocalDateTime updateAt;
 }
 

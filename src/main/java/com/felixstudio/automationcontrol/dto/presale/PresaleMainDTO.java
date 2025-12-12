@@ -1,11 +1,13 @@
 package com.felixstudio.automationcontrol.dto.presale;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.felixstudio.automationcontrol.entity.presale.PresaleMain;
 import lombok.Data;
 
 @Data
 public class PresaleMainDTO
 {
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;
     private String configDateTime;
     private String goodsCode;

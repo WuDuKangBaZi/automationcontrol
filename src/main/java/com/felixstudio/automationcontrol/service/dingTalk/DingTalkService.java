@@ -110,4 +110,26 @@ public class DingTalkService {
             throw new RuntimeException("文件上传失败:" + e.getMessage());
         }
     }
+
+    public Object sendWebHookMsg(String message, String groupShort,List<String> atMobiles) {
+        JSONObject messageBody = new JSONObject();
+        messageBody.put("msgtype", "text");
+        JSONObject textContent = new JSONObject();
+        textContent.put("content", message);
+        messageBody.put("text", textContent);
+        if(atMobiles != null && !atMobiles.isEmpty()){
+            JSONObject atObject = new JSONObject();
+            atObject.put("atMobiles", atMobiles);
+            atObject.put("isAtAll", false);
+            messageBody.put("at", atObject);
+        }
+        List<ChatGroupInfo> list = chatGroupInfoMapper.selectByMap(Map.of("short_name", groupShort));
+        Optional<ChatGroupInfo> opt = list.stream().findFirst();
+        if (opt.isEmpty()) {
+            throw new NullPointerException("未能找到匹配的群聊!");
+        } else {
+            ChatGroupInfo chatGroupInfo = opt.get();
+            return dingtalkUtil.sendWebHookMessage(chatGroupInfo.getWebhookUrl(), messageBody);
+        }
+    }
 }

@@ -1,9 +1,11 @@
 package com.felixstudio.automationcontrol.entity.presale.run;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 // 运行任务实体类
 @Data
 public class RunTask {
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id; // 生成任务的ID
     private String shopName;
     private Long presaleId;

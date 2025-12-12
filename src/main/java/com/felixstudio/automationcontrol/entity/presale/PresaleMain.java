@@ -15,7 +15,8 @@ import java.time.LocalTime;
 @Data
 public class PresaleMain {
 
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.ASSIGN_ID)
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;
 
     @TableField("config_date")

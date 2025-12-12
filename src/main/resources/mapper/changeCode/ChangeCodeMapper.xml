@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.felixstudio.automationcontrol.mapper.changeCode.ChangeCodeMapper">
+    <select id="queryByDTO" resultType="com.felixstudio.automationcontrol.dto.changeCode.ChangeCodeDTO">
+        select cc.id, cc.config_date,
+        cc.old_code,
+        cc.goods_name,
+        cc.new_code,
+        cc.remark,
+        cc.notified_person,
+        tj.task_status,
+        tj.error_message,
+        count(tr.id) as result_count,
+        sum(case when tr.status = 2 then 1 else 0 end) as success_count,
+        sum(case when tr.status = -1 then 1 else 0 end) as failure_count
+        from change_code cc
+        left join task_job tj on cc.id = tj.ref_id
+        left join task_results tr on tj.id = tr.task_id
+        <where>
+            and tj.task_type = '改编码'
+            <if test="changeCodeQueryDTO.date != null ">
+                and cc.config_date = #{changeCodeQueryDTO.date}
+            </if>
+        <if test="changeCodeQueryDTO.oldCode != null and changeCodeQueryDTO.oldCode != ''">
+                and cc.old_code = #{changeCodeQueryDTO.oldCode}
+            </if>
+            <if test="changeCodeQueryDTO.newCode != null and changeCodeQueryDTO.newCode != ''">
+                and cc.new_code = #{changeCodeQueryDTO.newCode}
+            </if>
+        </where>
+        group by cc.id, tj.task_status,tj.error_message
+    </select>
+
+</mapper>

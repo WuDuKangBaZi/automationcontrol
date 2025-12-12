@@ -5,10 +5,8 @@ import com.felixstudio.automationcontrol.entity.verify.SmSCodeEntity;
 import com.felixstudio.automationcontrol.mapper.verify.BusinessSmSInfoMapper;
 import com.github.benmanes.caffeine.cache.Cache;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
 import java.util.Random;
 
 @Slf4j
@@ -20,6 +18,7 @@ public class SmsShortCodeService {
     private static final String LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
     private final BusinessSmSInfoMapper businessSmSInfoMapper;
+
     public SmsShortCodeService(Cache<String, SmSCodeEntity> smsCodeCache, BusinessSmSInfoMapper businessSmSInfoMapper) {
         this.smsCodeCache = smsCodeCache;
         this.businessSmSInfoMapper = businessSmSInfoMapper;
@@ -32,29 +31,29 @@ public class SmsShortCodeService {
         return shortCode;
     }
 
-    public boolean submitSmS(String shortCode, String sms,String senderNick){
+    public boolean submitSmS(String shortCode, String sms, String senderNick) {
+        log.info("标记为 {} 的验证码值为: {}", shortCode.trim(), sms);
         SmSCodeEntity entity = smsCodeCache.getIfPresent(shortCode);
-        if (entity == null) return false;
-        entity.setSms(sms);
-        smsCodeCache.put(shortCode, entity);
-        log.info("标记为 {} 的验证码值为: {}", shortCode, sms);
-        BusinessSmsInfo smsInfo = businessSmSInfoMapper.selectByMap(Map.of("short_code", shortCode)).get(0);
-        log.info(smsInfo.toString());
-        smsInfo.setVerifyCode(sms);
+        if(entity == null){
+            log.warn("提交验证码失败，ShortCode: {} 不存在或已过期", shortCode.trim());
+            return false;
+        }
+        entity.setCode(sms.trim());
+        BusinessSmsInfo smsInfo = businessSmSInfoMapper.selectById(entity.getBusinessId());
+        smsInfo.setVerifyCode(sms.trim());
         smsInfo.setSubmitUser(senderNick);
         businessSmSInfoMapper.updateById(smsInfo);
-        smsCodeCache.invalidate(shortCode);
         return true;
     }
 
-    public String consumeSmS(String shortCode){
+    public String consumeSmS(String shortCode) {
         SmSCodeEntity entity = smsCodeCache.getIfPresent(shortCode);
         if (entity == null) return null;
         smsCodeCache.invalidate(shortCode);
         return entity.getSms();
     }
 
-    public boolean deleteShortCode(String shortCode){
+    public boolean deleteShortCode(String shortCode) {
         SmSCodeEntity entity = smsCodeCache.getIfPresent(shortCode);
         if (entity == null) return false;
         smsCodeCache.invalidate(shortCode);

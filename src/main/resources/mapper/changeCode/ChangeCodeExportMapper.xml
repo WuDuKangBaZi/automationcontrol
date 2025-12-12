@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.felixstudio.automationcontrol.mapper.changeCode.ChangeCodeExportMapper">
+    <select id="exportChangeCodeExcel"
+            resultType="com.felixstudio.automationcontrol.dto.export.changeCode.ChangeCodeExportDTO">
+        WITH expanded_results AS (SELECT tj.id AS job_id,
+        tj.ref_id AS change_id,
+        tr.id AS tr_id,
+        elem ->> 'goodsId' AS goods_id,
+        elem ->> 'goodsName' AS goods_name,
+        elem ->> 'operator' AS operator_name,
+        elem ->> 'operatorTime' AS operator_time,
+        elem ->> 'operatorType' AS operator_type,
+        elem ->> 'platform' AS platform,
+        elem ->> 'shop' as shop,
+        elem ->> 'status' as status_text,
+        elem ->> 'systemStyleCode' as system_style_code,
+        elem ->> 'errorMessage' AS error_message
+        FROM task_job tj
+        LEFT JOIN task_results tr ON tj.id = tr.task_id
+        CROSS JOIN LATERAL jsonb_array_elements(tr.result_data::jsonb) AS elem(elem)
+        WHERE tj.task_type = '改编码')
+        select cc.config_date,
+        cc.old_code,
+        cc.goods_name as config_goods_name,
+        cc.new_code,
+        cc.remark,
+        cc.notified_person,
+        case
+        when tj.task_status = '1' then '进行中'
+        when tj.task_status = '2' then '已完成'
+        when tj.task_status = '-1' then '已失败'
+        else '未开始' end as task_status,
+        er.goods_id,
+        er.goods_name,
+        er.operator_name,
+        er.operator_time,
+        er.operator_type,
+        er.platform,
+        er.shop,
+        er.status_text,
+        er.system_style_code,
+        er.error_message
+
+        from change_code cc
+        left join task_job tj on cc.id = tj.ref_id
+        left join task_results tr on tj.id = tr.task_id
+        LEFT JOIN expanded_results er ON er.change_id = cc.id
+        <where>
+            and tj.task_type = '改编码'
+        </where>
+    </select>
+</mapper>

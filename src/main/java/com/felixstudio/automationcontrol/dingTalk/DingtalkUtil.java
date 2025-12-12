@@ -87,4 +87,11 @@ public class DingtalkUtil {
     public RestOperations getRestTemplate() {
         return this.restTemplate;
     }
+
+    public Object sendWebHookMessage(String webhookUrl, JSONObject messageBody) {
+        log.info(webhookUrl);
+        HttpEntity<JSONObject> entity = new HttpEntity<>(messageBody);
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity(webhookUrl, entity, String.class);
+        return JSONObject.parseObject(responseEntity.getBody());
+    }
 }

@@ -31,7 +31,10 @@ public class DingTalkMenu {
 
     public void saveVerifyMenu(String shortCode,String verifyCode,String senderNick,String channelId){
         log.info("收到验证码: {} 来自用户: {}",verifyCode,senderNick);
-        smsShortCodeService.submitSmS(shortCode,verifyCode,senderNick);
+        boolean submit = smsShortCodeService.submitSmS(shortCode.trim(),verifyCode,senderNick);
+        if(!submit){
+            throw  new RuntimeException("提交验证码失败，可能验证码已过期或无效");
+        }
         dingtalkUtil.sendMessage(dingTalkMessageBuilder.sampleText("感谢您的配合，验证码已收到并提交给流程！",channelId));
     }
 

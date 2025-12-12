@@ -1,0 +1,13 @@
+package com.felixstudio.automationcontrol.dto.changeCode;
+
+import com.felixstudio.automationcontrol.dto.PagerDTO;
+import lombok.Data;
+
+import java.time.LocalDate;
+
+@Data
+public class ChangeCodeQueryDTO extends PagerDTO {
+    private LocalDate date;
+    private String oldCode;
+    private String newCode;
+}

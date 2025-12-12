@@ -5,11 +5,18 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.felixstudio.automationcontrol.dto.presale.PresaleMainDTO;
 import com.felixstudio.automationcontrol.dto.presale.PresaleMainQueryDTO;
+import com.felixstudio.automationcontrol.dto.presale.PresaleMainTaskInfoDTO;
 import com.felixstudio.automationcontrol.entity.presale.PresaleMain;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 @Mapper
 public interface PresaleMainMapper extends BaseMapper<PresaleMain> {
     Page<PresaleMainDTO> queryPresaleMainDTOs(IPage<PresaleMainDTO> page, @Param("presaleMainQuery") PresaleMainQueryDTO presaleMain);
+
+    Page<PresaleMainTaskInfoDTO> queryPresaleMainTaskInfoDTOs(Page<PresaleMainTaskInfoDTO> page, Long presaleId);
+
+    List<PresaleMain> checkPresaleMain(List<PresaleMain> presaleMains);
 }

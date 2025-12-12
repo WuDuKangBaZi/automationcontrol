@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.felixstudio.automationcontrol.mapper.util.PresaleExportMapper">
+    <select id="exportPresaleMainExcel" resultType="com.felixstudio.automationcontrol.dto.export.presaleMain.PresaleDetailsExportDTO">
+        select
+        si.shop_name,
+        pm.config_date,
+        pm.config_time,
+        pm.goods_code,
+        pm.goods_name,
+        pm.shortage_reason,
+        pm.presale_end_time,
+        pm.handling_method,
+        pm.person_in_charge,
+        pec.erp_code,
+        pec.erp_name,
+        tr.result_data ->> '商品ID' as goodsId,
+        sku_item.obj ->> 'SKU' as sku,
+        sku_item.obj ->> '处理方式' as sku_handling_method,
+        sku_item.obj ->> '预售日期' as sku_presale_date,
+
+        case tr.status
+        when 1 then '进行中'
+        when 2 then '成功'
+        when -1 then '失败'
+        else ''
+        end as task_status,
+        array_to_string(
+        coalesce(
+        (
+        select array_agg(concat(#{serverPrefix}, tlf2.file_path))
+        from task_log_files tlf2
+        where tlf2.task_id = tj.id
+        ),
+        array[]::text[]
+        ),
+        ';'
+        ) as task_files
+
+        from presale_main pm
+        left join presale_erp_code pec on pm.id = pec.presale_id
+        left join task_job tj on pec.id = tj.ref_id
+        left join task_results tr on tr.task_id = tj.id
+        left join shop_info si on tj.shop_id = si.id
+
+        left join lateral
+        jsonb_array_elements(coalesce(tr.result_data -> 'SKU列表', '[]'::jsonb)) as sku_item(obj)
+        on true
+
+        <where>
+            <if test="presaleExportQueryDTO.presaleMainQueryDTO.configDate != null">
+                AND pm.config_date = #{presaleExportQueryDTO.presaleMainQueryDTO.configDate}
+            </if>
+            <if test="presaleExportQueryDTO.exportOptions == '仅成功'">
+                and tr.status = 2
+            </if>
+            <if test="presaleExportQueryDTO.exportOptions == '仅失败'">
+                and tr.status = -1
+            </if>
+            and tj.task_type = '预售.ERP数据处理'
+        </where>
+
+        order by si.shop_name, pm.goods_code
+
+    </select>
+    <select id="exportPresaleSummaryExcel"
+            resultType="com.felixstudio.automationcontrol.dto.export.presaleMain.PresaleSummaryDTO"></select>
+</mapper>

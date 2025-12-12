@@ -2,6 +2,16 @@
 <!DOCTYPE mapper        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.felixstudio.automationcontrol.mapper.presale.PresaleMainMapper">
+    <resultMap id="PresaleMainTaskInfoMap" type="com.felixstudio.automationcontrol.dto.presale.PresaleMainTaskInfoDTO">
+        <result column="shop_name" property="shopName"/>
+        <result column="goodsId" property="goodsId"/>
+        <result column="task_status" property="taskStatus"/>
+        <result column="result_data" property="resultData"
+                typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="files_json" property="filePaths"
+                typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+    </resultMap>
     <select id="queryPresaleMainDTOs" resultType="com.felixstudio.automationcontrol.dto.presale.PresaleMainDTO">
         WITH erp_task_stats AS (
         SELECT
@@ -57,5 +67,42 @@
             </if>
         </where>
         ORDER BY pm.config_date DESC, pm.config_time DESC
+    </select>
+    <select id="queryPresaleMainTaskInfoDTOs" resultMap="PresaleMainTaskInfoMap">
+        select si.shop_name                as shop_name,
+               tr.result_data ->> '商品ID' as goodsId,
+               tr.status                   as task_status,
+               tr.result_data,
+               tr.created_at,
+               COALESCE(
+                       jsonb_agg(DISTINCT jsonb_build_object('fileName', tlf.original_name, 'filePath', tlf.file_path)
+                       ), '[]'::jsonb)     AS files_json
+        from task_results tr
+                 left join task_job tj on tr.task_id = tj.id
+                 left join presale_erp_code pec on tj.ref_id = pec.id
+                 left join shop_info si on tj.shop_id = si.id
+                 left join task_log_files tlf on tj.id = tlf.task_id
+        where pec.presale_id = #{presaleId}
+          and tj.task_type = '预售.ERP数据处理'
+        group by shop_name, goodsId, tr.result_data, tr.created_at, tr.status
+    </select>
+    <select id="checkPresaleMain">
+        SELECT t.goods_code,t.config_date,t.shortage_reason,t.presale_end_time,t.handling_method
+        FROM presale_main t
+        JOIN (
+        <foreach collection="list" item="k" separator=" union all ">
+            SELECT
+            #{k.goodsCode} AS goods_code,
+            #{k.configDate} AS config_date,
+            #{k.shortageReason} AS shortage_reason,
+            #{k.presaleEndTime} AS presale_end_time,
+            #{k.handlingMethod} AS handling_method
+        </foreach>
+        ) v
+        ON t.goods_code = v.goods_code
+        AND t.config_date = v.config_date
+        AND t.shortage_reason = v.shortage_reason
+        AND t.presale_end_time = v.presale_end_time
+        AND t.handling_method = v.handling_method
     </select>
 </mapper>

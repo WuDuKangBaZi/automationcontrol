@@ -41,10 +41,10 @@ public class ShopInfoService {
     }
 
     public ShopInfo getShopByNameAndBusinessType(String shopName,String businessType) {
-        return shopInfoMapper.selectList(
-                new LambdaQueryWrapper<ShopInfo>()
-                        .eq(ShopInfo::getShopName,shopName)
-                        .eq(ShopInfo::getBusinessType,businessType)
-        ).get(0);
+        ShopInfo shopInfo = shopInfoMapper.selectOne(new LambdaQueryWrapper<ShopInfo>()
+                .eq(ShopInfo::getShopName, shopName)
+                .eq(ShopInfo::getBusinessType, businessType)
+        );
+        return shopInfo;
     }
 }

@@ -12,8 +12,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 @Slf4j
+@Profile("!local")
 @Configuration
 public class DingTalkStreamConfig {
 
@@ -36,9 +38,10 @@ public class DingTalkStreamConfig {
             if (textObject.containsKey("isReplyMsg")) {
                 //回复型消息
                 String replyText = textObject.getJSONObject("repliedMsg").getJSONObject("content").getString("text");
+                log.info(replyText);
                 String menuTag = replyText.split("&")[1];
                 if ("vek#".equals(menuTag.substring(0, 4))) {
-                    dingTalkMenu.saveVerifyMenu(menuTag.substring(4), textObject.getString("content"), payload.getString("senderNick"), openThreadId);
+                    dingTalkMenu.saveVerifyMenu(menuTag.substring(4), textObject.getString("content").trim(), payload.getString("senderNick"), openThreadId);
                 }
 
             }
@@ -51,7 +54,7 @@ public class DingTalkStreamConfig {
                 }
                 dingTalkMenu.saveGroupInfo(openThreadId, payload.getString("conversationTitle"), shortName, openThreadId);
             } else if (content.startsWith("webhook")) {
-                String webhookUrl = content.substring(7).trim();
+                String webhookUrl = content.split("#")[1];
                 dingTalkMenu.saveWebhookUrl(webhookUrl, openThreadId);
             } else {
                 log.info("收到普通消息: {}", textObject.getString("content"));

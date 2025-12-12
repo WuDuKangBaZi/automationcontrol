@@ -31,6 +31,8 @@ public class TaskJobServiceImpl extends ServiceImpl<TaskJobMapper, TaskJob> impl
         }
         queryWrapper.orderByAsc(TaskJob::getCreatedAt);
         queryWrapper.last("for update skip locked limit 1");
+        System.out.println("sqlSegment: " + queryWrapper.getSqlSegment());
+        System.out.println("params: " + queryWrapper.getParamNameValuePairs());
         List<TaskJob> list = this.baseMapper.selectList(queryWrapper);
         if(list == null || list.isEmpty()){
             throw new NullPointerException("没有找到符合条件的任务");

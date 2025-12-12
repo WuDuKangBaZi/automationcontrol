@@ -41,10 +41,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 "/api/auth/login",
                 "/uploads/",
                 "/images/",
-                "/api/auth/refreshToken"
+                "/api/auth/refreshToken",
+                "/api/dingtalk/send",
+                "/api/dingtalk/sendWebHook"
         );
         boolean isWhiteListed = whiteList.stream().anyMatch(path::startsWith);
-        if(isWhiteListed || path.contains("/pub/")) {
+        if(isWhiteListed || path.contains("/pub/") || path.contains("/verify/")) {
             filterChain.doFilter(request, response);
             return;
         }
