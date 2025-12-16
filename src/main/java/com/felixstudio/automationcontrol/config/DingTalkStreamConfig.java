@@ -56,7 +56,10 @@ public class DingTalkStreamConfig {
             } else if (content.startsWith("webhook")) {
                 String webhookUrl = content.split("#")[1];
                 dingTalkMenu.saveWebhookUrl(webhookUrl, openThreadId);
-            } else {
+            } else if (content.startsWith("查询进度")){
+                dingTalkMenu.queryTaskProgress(openThreadId,content);
+            }
+            else {
                 log.info("收到普通消息: {}", textObject.getString("content"));
             }
             JSONObject ack = new JSONObject();

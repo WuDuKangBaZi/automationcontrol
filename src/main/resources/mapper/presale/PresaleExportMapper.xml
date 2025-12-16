@@ -16,14 +16,18 @@
         pec.erp_code,
         pec.erp_name,
         tr.result_data ->> '商品ID' as goodsId,
+        tr.message as goods_error_message,
         sku_item.obj ->> 'SKU' as sku,
         sku_item.obj ->> '处理方式' as sku_handling_method,
         sku_item.obj ->> '预售日期' as sku_presale_date,
-
+        tj.error_message,
         case tr.status
         when 1 then '进行中'
         when 2 then '成功'
         when -1 then '失败'
+        when -2 then '取消'
+        when 3 then '空白'
+        when 4 then '跳过'
         else ''
         end as task_status,
         array_to_string(

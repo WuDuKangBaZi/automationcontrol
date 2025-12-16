@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.felixstudio.automationcontrol.mapper.task.TaskJobMapper">
+
+    <select id="queryProgress" resultType="com.felixstudio.automationcontrol.dto.task.TaskProgress">
+        select s.shop_name,
+               tj_agg.pending,
+               tj_agg.running,
+               tj_agg.success,
+               tj_agg.failed,
+               tj_agg.canceled,
+               tj_agg.not_goods,
+               COALESCE(tr_agg.success_goods, 0)  as success_goods,
+               COALESCE(tr_agg.failed_goods, 0)   as failed_goods,
+               COALESCE(tr_agg.canceled_goods, 0) as canceled_goods
+        from shop_info s
+                 left join (select si.id                                                             as shop_id,
+                                   COALESCE(sum(case when tj.task_status = 0 then 1 else 0 end), 0)  as pending,
+                                   COALESCE(sum(case when tj.task_status = 1 then 1 else 0 end), 0)  as running,
+                                   COALESCE(sum(case when tj.task_status = 2 then 1 else 0 end), 0)  as success,
+                                   COALESCE(sum(case when tj.task_status = -1 then 1 else 0 end), 0) as failed,
+                                   COALESCE(sum(case when tj.task_status = 3 then 1 else 0 end), 0) as not_goods,
+                                   COALESCE(sum(case when tj.task_status = -2 then 1 else 0 end), 0)  as canceled
+                            from task_job tj
+                                     left join shop_info si on tj.shop_id = si.id
+                            where tj.task_type = '预售.ERP数据处理'
+                              and tj.created_at &gt;= #{queryDay}::date
+                              and tj.created_at &lt; #{queryDay}::date + INTERVAL '1 day'
+                            group by si.id) tj_agg on tj_agg.shop_id = s.id
+                 left join (select si.id                                                        as shop_id,
+                                   COALESCE(sum(case when tr.status = 2 then 1 else 0 end), 0)  as success_goods,
+                                   COALESCE(sum(case when tr.status = -1 then 1 else 0 end), 0) as failed_goods,
+                                   COALESCE(sum(case when tr.status = 4 then 1 else 0 end), 0)  as canceled_goods
+                            from task_job tj
+                                     left join shop_info si on tj.shop_id = si.id
+                                     left join task_results tr on tj.id = tr.task_id
+                            where tj.task_type = '预售.ERP数据处理'
+                              and tj.created_at &gt;= #{queryDay}::date
+                              and tj.created_at &lt; #{queryDay}::date + INTERVAL '1 day'
+                            group by si.id) tr_agg on tr_agg.shop_id = s.id
+        where s.id in (select distinct si.id
+                       from task_job tj
+                                left join shop_info si on tj.shop_id = si.id
+                       where tj.task_type = '预售.ERP数据处理'
+                         and tj.created_at &gt;= #{queryDay}::date
+                         and tj.created_at &lt; #{queryDay}::date + INTERVAL '1 day')
+    </select>
+    <select id="queryProgressInfo" resultType="com.alibaba.fastjson2.JSONObject">
+
+    </select>
+</mapper>

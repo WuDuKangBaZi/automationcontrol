@@ -29,12 +29,16 @@ public class PresaleDetailsExportDTO {
     private String handlingMethod;
     @ExcelProperty("负责人")
     private String personInCharge;
+    @ExcelProperty("错误信息")
+    private String errorMessage;
     @ExcelProperty("ERP编码")
     private String erpCode;
     @ExcelProperty("ERP名称")
     private String erpName;
     @ExcelProperty("商品ID")
     private String goodsId;
+    @ExcelProperty("商品处理错误信息")
+    private String goodsErrorMessage;
     @ExcelProperty("SKU")
     private String sku;
     @ExcelProperty("SKU处理方式")

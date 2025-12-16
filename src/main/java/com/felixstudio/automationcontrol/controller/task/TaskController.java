@@ -28,8 +28,8 @@ public class TaskController {
     public ApiResponse<?> getTask(@RequestBody JSONObject params) {
         // 传入参数中可能包含shopName 需要注意
         String taskType = params.getString("taskType");
-        String shopName = "";
-        String businessType = "";
+        String shopName;
+        String businessType;
         ShopInfo shopInfo = null;
         if (params.containsKey("shopName")) {
             shopName = params.getString("shopName");

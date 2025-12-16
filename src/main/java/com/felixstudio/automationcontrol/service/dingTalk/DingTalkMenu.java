@@ -3,15 +3,17 @@ package com.felixstudio.automationcontrol.service.dingTalk;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.felixstudio.automationcontrol.dingTalk.DingTalkMessageBuilder;
 import com.felixstudio.automationcontrol.dingTalk.DingtalkUtil;
+import com.felixstudio.automationcontrol.dto.task.TaskProgress;
 import com.felixstudio.automationcontrol.entity.dingtalkEntity.ChatGroupInfo;
 import com.felixstudio.automationcontrol.mapper.dingTalk.ChatGroupInfoMapper;
+import com.felixstudio.automationcontrol.mapper.task.TaskJobMapper;
 import com.felixstudio.automationcontrol.service.verify.SmsShortCodeService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Service
@@ -21,12 +23,14 @@ public class DingTalkMenu {
     private final ChatGroupInfoMapper chatGroupInfoMapper;
     private final DingTalkMessageBuilder dingTalkMessageBuilder;
     private final DingtalkUtil dingtalkUtil ;
+    private final TaskJobMapper taskJobMapper;
 
-    public DingTalkMenu(SmsShortCodeService smsShortCodeService, ChatGroupInfoMapper chatGroupInfoMapper, DingTalkMessageBuilder dingTalkMessageBuilder, DingtalkUtil dingtalkUtil) {
+    public DingTalkMenu(SmsShortCodeService smsShortCodeService, ChatGroupInfoMapper chatGroupInfoMapper, DingTalkMessageBuilder dingTalkMessageBuilder, DingtalkUtil dingtalkUtil, TaskJobMapper taskJobMapper) {
         this.smsShortCodeService = smsShortCodeService;
         this.chatGroupInfoMapper = chatGroupInfoMapper;
         this.dingTalkMessageBuilder = dingTalkMessageBuilder;
         this.dingtalkUtil = dingtalkUtil;
+        this.taskJobMapper = taskJobMapper;
     }
 
     public void saveVerifyMenu(String shortCode,String verifyCode,String senderNick,String channelId){
@@ -77,7 +81,29 @@ public class DingTalkMenu {
             log.info("更新群聊Webhook地址: 群聊ID={}, Webhook={}", openThreadId, webhookUrl);
             dingtalkUtil.sendMessage(dingTalkMessageBuilder.sampleText("Webhook地址已更新！在RPA中可通过指定接口调用消息通知",openThreadId));
         }else{
-
+            dingtalkUtil.sendMessage(dingTalkMessageBuilder.sampleText("未在服务器记录中找到当前群聊!请使用[注册#群聊简称]来注册群聊!",openThreadId));
         }
     }
+
+    public void queryTaskProgress(String openThreadId, String content) {
+        // 查询预售进度
+        List<String> queryParam = List.of(content.split("#"));
+        String queryDay;
+        if(queryParam.size() > 1){
+            // 有查询参数
+            queryDay = queryParam.get(1).trim();
+        }else {
+            // 无查询参数，使用默认值
+            LocalDate today = LocalDate.now();
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            queryDay = today.format(fmt);
+        }
+        List<TaskProgress> taskJonsList = taskJobMapper.queryProgress(queryDay);
+        if(taskJonsList.isEmpty()){
+            dingtalkUtil.sendMessage(dingTalkMessageBuilder.sampleText("未查询到对应日期的任务进度信息，请确认日期是否正确！",openThreadId));
+            return;
+        }
+        dingtalkUtil.sendMessage(dingTalkMessageBuilder.buildPresaleQueryMarkdownMessage(queryDay, taskJonsList, openThreadId));
+    }
+
 }
