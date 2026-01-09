@@ -2,6 +2,7 @@ package com.felixstudio.automationcontrol.service.task;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.felixstudio.automationcontrol.dto.presale.PresaleTaskProgress;
 import com.felixstudio.automationcontrol.entity.shop.ShopInfo;
 import com.felixstudio.automationcontrol.entity.task.TaskJob;
 
@@ -11,4 +12,7 @@ public interface TaskJobService extends IService<TaskJob> {
     void batchInsertTaskJobs(List<TaskJob> jobList);
 
     TaskJob getNextTask(String taskType, ShopInfo shopInfo);
+
+    List<PresaleTaskProgress> queryPresaleProgress();
+
 }

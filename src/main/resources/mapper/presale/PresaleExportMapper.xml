@@ -35,7 +35,7 @@
         (
         select array_agg(concat(#{serverPrefix}, tlf2.file_path))
         from task_log_files tlf2
-        where tlf2.task_id = tj.id
+        where tlf2.task_id = tr.id
         ),
         array[]::text[]
         ),

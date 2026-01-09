@@ -43,11 +43,13 @@ public class SecurityConfig {
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/images/**").permitAll() // 放行静态资源
                         .requestMatchers("/api/dingtalk/**").permitAll()
                         .requestMatchers("/api/verify/**").permitAll()
                         .requestMatchers("/api/auth/refreshToken").permitAll()
+                        .requestMatchers("/api/robot/heartbeat").permitAll()
                         .requestMatchers(new PubPathRequestMatcher()).permitAll()
                         .anyRequest().authenticated()
                 )

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.felixstudio.automationcontrol.mapper.invoice.InvoiceOperationHistoryMapper">
+
+    <select id="findUnfinished"
+            resultType="com.felixstudio.automationcontrol.entity.invoice.InvoiceOperationHistory">
+        select *
+        from invoice_operation_history i
+        where i.shop_name = #{shopName}
+          and i.platform = #{platform}
+          and (i.verified_in_jst_time is null or i.invoiced_time is null or i.registered_sendback_time is null or
+               i.sendback_done_time is null or i.mark_in_jst_time is null)
+        and i.status = 0;
+    </select>
+    <select id="getNextByStep"
+            resultType="com.felixstudio.automationcontrol.entity.invoice.InvoiceOperationHistory">
+        select * from invoice_operation_history i
+        <where>
+            i.shop_name = #{shopName}
+            and i.platform = #{platform}
+            and i.status != 2
+            <if test="step == 'verifyJst'">
+                and (i.verified_in_jst_time is null)
+            </if>
+            <if test="step == 'invoiced'">
+                and (i.verified_in_jst_time is not null)
+                and (i.invoiced_time is null)
+                 and( i.invoiced_b = True)
+            </if>
+            <if test="step == 'registerSendback'">
+                and (i.invoiced_time is not null)
+                and (i.registered_sendback_time is null)
+            </if>
+            <if test="step == 'sendbackDone'">
+                and (i.registered_sendback_time is not null)
+                and (i.sendback_done_time is null)
+            </if>
+            <if test="step == 'markJst'">
+                and (i.sendback_done_time is not null)
+                and (i.mark_in_jst_time is null)
+            </if>
+        </where>
+    </select>
+    <select id="getPlatforms" resultType="java.lang.String">
+        select distinct i.platform
+        from invoice_operation_history i;
+    </select>
+    <select id="getShops" resultType="java.lang.String">
+        select distinct i.shop_name
+        from invoice_operation_history i
+        where i.platform = #{platform};
+    </select>
+</mapper>

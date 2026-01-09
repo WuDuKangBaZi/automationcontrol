@@ -13,30 +13,27 @@
                 typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
     </resultMap>
     <select id="queryPresaleMainDTOs" resultType="com.felixstudio.automationcontrol.dto.presale.PresaleMainDTO">
-        WITH erp_task_stats AS (
-        SELECT
-        pec.presale_id,
+        WITH erp_task_stats AS (SELECT pec.presale_id,
         COUNT(te.id) AS erp_task_total,
-        COUNT(*) FILTER (WHERE te.task_status = 2) AS erp_task_success,
+        COUNT(*) FILTER (WHERE tr.status = 2) AS erp_task_success,
+        count(*) FILTER (WHERE te.task_status = 0) AS erp_task_pending,
         COUNT(*) FILTER (WHERE te.task_status = 1) AS erp_task_running,
-        COUNT(*) FILTER (WHERE te.task_status = -1) AS erp_task_fail
+        COUNT(*) FILTER (WHERE tr.status = -1) AS erp_task_fail,
+        Count(*) FILTER (WHERE te.task_status = 3) AS erp_task_empty,
+        Count(*) FILTER (WHERE te.task_status = -2) AS erp_task_cancel
         FROM presale_erp_code pec
         LEFT JOIN task_job te ON pec.id = te.ref_id
-        GROUP BY pec.presale_id
-        ),
-        main_task_stats AS (
-        SELECT
-        ref_id AS presale_id,
+        left join task_results tr on tr.task_id = te.id
+        GROUP BY pec.presale_id),
+        main_task_stats AS (SELECT ref_id AS presale_id,
         COUNT(id) AS main_task_total,
         COUNT(*) FILTER (WHERE task_status = 2) AS main_task_success,
         COUNT(*) FILTER (WHERE task_status = 1) AS main_task_running,
         COUNT(*) FILTER (WHERE task_status = -1) AS main_task_fail
         FROM task_job
-        GROUP BY ref_id
-        )
-        SELECT
-        pm.id,
-        concat(pm.config_date,' ',pm.config_time) as configDateTime,
+        GROUP BY ref_id)
+        SELECT pm.id,
+        concat(pm.config_date, ' ', pm.config_time) as configDateTime,
         pm.goods_code,
         pm.config_time,
         pm.goods_name,
@@ -44,14 +41,17 @@
         pm.presale_end_time,
         pm.handling_method,
         pm.person_in_charge,
-        COALESCE(mts.main_task_total,0) AS main_task_total,
-        COALESCE(mts.main_task_success,0) AS main_task_success,
-        COALESCE(mts.main_task_running,0) AS main_task_running,
-        COALESCE(mts.main_task_fail,0) AS main_task_fail,
-        COALESCE(ets.erp_task_total,0) AS erp_task_total,
-        COALESCE(ets.erp_task_success,0) AS erp_task_success,
-        COALESCE(ets.erp_task_running,0) AS erp_task_running,
-        COALESCE(ets.erp_task_fail,0) AS erp_task_fail
+        COALESCE(mts.main_task_total, 0) AS main_task_total,
+        COALESCE(mts.main_task_success, 0) AS main_task_success,
+        COALESCE(mts.main_task_running, 0) AS main_task_running,
+        COALESCE(mts.main_task_fail, 0) AS main_task_fail,
+        COALESCE(ets.erp_task_total, 0) AS erp_task_total,
+        coalesce(ets.erp_task_pending,0) AS erp_task_pending,
+        coalesce(ets.erp_task_empty,0) AS erp_task_empty,
+        COALESCE(ets.erp_task_success, 0) AS erp_task_success,
+        COALESCE(ets.erp_task_running, 0) AS erp_task_running,
+        COALESCE(ets.erp_task_fail, 0) AS erp_task_fail,
+        COALESCE(ets.erp_task_cancel, 0) AS erp_task_cancel
         FROM presale_main pm
         LEFT JOIN main_task_stats mts ON pm.id = mts.presale_id
         LEFT JOIN erp_task_stats ets ON pm.id = ets.presale_id
@@ -81,7 +81,7 @@
                  left join task_job tj on tr.task_id = tj.id
                  left join presale_erp_code pec on tj.ref_id = pec.id
                  left join shop_info si on tj.shop_id = si.id
-                 left join task_log_files tlf on tj.id = tlf.task_id
+                 left join task_log_files tlf on tr.id = tlf.task_id
         where pec.presale_id = #{presaleId}
           and tj.task_type = '预售.ERP数据处理'
         group by shop_name, goodsId, tr.result_data, tr.created_at, tr.status

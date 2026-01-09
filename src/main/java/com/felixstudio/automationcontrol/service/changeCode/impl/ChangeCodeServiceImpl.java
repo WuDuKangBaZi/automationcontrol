@@ -5,18 +5,22 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.felixstudio.automationcontrol.dto.changeCode.ChangeCodeDTO;
+import com.felixstudio.automationcontrol.dto.changeCode.ChangeCodeDetailsDTO;
 import com.felixstudio.automationcontrol.dto.changeCode.ChangeCodeQueryDTO;
 import com.felixstudio.automationcontrol.entity.changeCode.ChangeCode;
 import com.felixstudio.automationcontrol.entity.task.TaskJob;
 import com.felixstudio.automationcontrol.mapper.changeCode.ChangeCodeMapper;
 import com.felixstudio.automationcontrol.service.changeCode.ChangeCodeService;
 import com.felixstudio.automationcontrol.service.task.TaskJobService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @Service
 public class ChangeCodeServiceImpl extends ServiceImpl<ChangeCodeMapper, ChangeCode> implements ChangeCodeService {
     private final TaskJobService taskJobService;
@@ -49,5 +53,12 @@ public class ChangeCodeServiceImpl extends ServiceImpl<ChangeCodeMapper, ChangeC
         IPage<ChangeCodeDTO> pager = new Page<>(changeCodeQueryDTO.getPageNo(), changeCodeQueryDTO.getPageSize());
 
         return this.baseMapper.queryByDTO(pager,changeCodeQueryDTO);
+    }
+
+    @Override
+    public List<?> queryDetailsById(Long id) {
+        List<ChangeCodeDetailsDTO> details = this.baseMapper.queryDetailsById(id);
+        log.info(details.toString());
+        return details;
     }
 }

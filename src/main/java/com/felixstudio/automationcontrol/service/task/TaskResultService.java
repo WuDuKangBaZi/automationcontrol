@@ -6,5 +6,5 @@ import com.felixstudio.automationcontrol.entity.task.TaskResults;
 public interface TaskResultService extends IService<TaskResults> {
     boolean checkTaskKey(String taskKey);
 
-    int submit(TaskResults taskResults);
+    Long submit(TaskResults taskResults);
 }

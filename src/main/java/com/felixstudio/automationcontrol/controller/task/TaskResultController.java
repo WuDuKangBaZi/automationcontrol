@@ -24,7 +24,7 @@ public class TaskResultController {
         // 处理任务结果提交的逻辑
         try{
             log.debug(taskResults.toString());
-            return ApiResponse.success(taskResultService.submit(taskResults));
+            return ApiResponse.success(taskResultService.submit(taskResults).toString());
         }catch (Exception e){
             return ApiResponse.failure(500,"提交任务结果时发生错误: "+e.getMessage());
         }

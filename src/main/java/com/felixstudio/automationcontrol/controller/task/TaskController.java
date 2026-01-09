@@ -2,15 +2,13 @@ package com.felixstudio.automationcontrol.controller.task;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.felixstudio.automationcontrol.common.ApiResponse;
+import com.felixstudio.automationcontrol.dto.task.TaskQueryDTO;
 import com.felixstudio.automationcontrol.entity.shop.ShopInfo;
 import com.felixstudio.automationcontrol.entity.task.TaskJob;
 import com.felixstudio.automationcontrol.service.shop.ShopInfoService;
 import com.felixstudio.automationcontrol.service.task.TaskJobService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/task")
@@ -25,19 +23,13 @@ public class TaskController {
     }
 
     @PostMapping("/pub/getTask")
-    public ApiResponse<?> getTask(@RequestBody JSONObject params) {
-        // 传入参数中可能包含shopName 需要注意
-        String taskType = params.getString("taskType");
-        String shopName;
-        String businessType;
+    public ApiResponse<?> getTask(@RequestBody TaskQueryDTO taskQueryDTO) {
         ShopInfo shopInfo = null;
-        if (params.containsKey("shopName")) {
-            shopName = params.getString("shopName");
-            businessType = params.getString("businessType");
-            shopInfo = shopInfoService.getShopByNameAndBusinessType(shopName, businessType);
+        if(taskQueryDTO.getShopName() != null){
+            shopInfo = shopInfoService.getShopByNameAndBusinessType(taskQueryDTO.getShopName(), taskQueryDTO.getBusinessType());
         }
         try {
-            TaskJob job = taskJobService.getNextTask(taskType, shopInfo);
+            TaskJob job = taskJobService.getNextTask(taskQueryDTO.getTaskType(), shopInfo);
             JSONObject resultJson = new JSONObject();
             resultJson.put("taskId", job.getId().toString());
             resultJson.put("taskParams", job.getTaskParams());
@@ -62,5 +54,9 @@ public class TaskController {
             return ApiResponse.success("任务结果提交成功");
         }
         return ApiResponse.failure(404, "未找到对应的任务");
+    }
+    @GetMapping("/presale/progress")
+    public ApiResponse<?> getPresaleProgress() {
+        return ApiResponse.success(taskJobService.queryPresaleProgress().get(0));
     }
 }

@@ -11,5 +11,12 @@
         where ud.department_id = #{deptId}
         group by u.id
     </select>
+    <select id="getUserDepartmentByUserId"
+            resultType="com.felixstudio.automationcontrol.entity.depart.Departments">
+        select * from departments d
+                          left join user_departments ud on d.id = ud.department_id
+                 left join users u on ud.user_id = u.id
+        where u.account = #{username}
+    </select>
 
 </mapper>

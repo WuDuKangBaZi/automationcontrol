@@ -14,6 +14,7 @@ public class UserInfoDTO {
     private List<String> permissions;
     private String avatar;
     private String phone;
+    private String groupName;
 
     public UserInfoDTO forEntity(Users user) {
         this.userId = String.valueOf(user.getId());

@@ -31,5 +31,23 @@
         </where>
         group by cc.id, tj.task_status,tj.error_message
     </select>
+    <select id="queryDetailsById" resultType="com.felixstudio.automationcontrol.dto.changeCode.ChangeCodeDetailsDTO">
+        select datas ->> 'shop'      as shop,
+               datas ->> 'status'    as status,
+               datas ->> 'goodsId'   as goods_id,
+               datas ->> 'operator'  as operator,
+               datas ->> 'platform'  as platform,
+               datas ->> 'goodsName' as goods_name,
+               datas ->> 'errorMessage' as error_message,
+               datas ->> 'operatorTime' as operator_time,
+               datas ->> 'operatorType' as operator_type,
+               datas ->> 'systemStyleCode' as system_style_code
+        from task_results tr
+                 left join task_job tj on tj.id = tr.task_id
+                 left join LATERAL jsonb_array_elements(
+                tr.result_data -> 'data'
+                                   ) as datas on true
+        where tj.ref_id = #{id}
+    </select>
 
 </mapper>

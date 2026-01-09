@@ -52,5 +52,9 @@ public class PresaleMainController {
     public ApiResponse<?> check(@RequestBody List<PresaleMain> presaleMains) {
         return ApiResponse.success(service.checkPresaleMain(presaleMains));
     }
+    @PostMapping("/delete/{presaleId}")
+    public ApiResponse<?> delete(@PathVariable String presaleId) {
+        return ApiResponse.success(service.deletePresaleMainByPresaleId(presaleId));
+    }
 
 }

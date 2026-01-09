@@ -26,4 +26,7 @@ public class PresaleMainDTO
     private Integer erpTaskSuccess;
     private Integer erpTaskFail;
     private Integer erpTaskRunning;
+    private Integer erpTaskPending;
+    private Integer erpTaskEmpty;
+    private Integer erpTaskCancel;
 }

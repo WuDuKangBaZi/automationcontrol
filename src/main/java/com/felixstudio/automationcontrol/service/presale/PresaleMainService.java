@@ -24,4 +24,6 @@ public interface PresaleMainService extends IService<PresaleMain> {
     Page<PresaleMainTaskInfoDTO> getTaskInfoByPresaleId(String presaleId, PagerDTO pagerDTO);
 
     Object checkPresaleMain(List<PresaleMain> presaleMain);
+
+    boolean deletePresaleMainByPresaleId(String presaleId);
 }

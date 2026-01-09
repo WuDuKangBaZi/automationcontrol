@@ -49,4 +49,10 @@
     <select id="queryProgressInfo" resultType="com.alibaba.fastjson2.JSONObject">
 
     </select>
+    <select id="queryPresaleProgress" resultType="com.felixstudio.automationcontrol.dto.presale.PresaleTaskProgress">
+        select COALESCE(sum(case when task_type = '预售.ERP查询' then 1 else 0 end), 0) as erp_count,
+               coalesce(sum(case when task_type = '预售.ERP数据处理' then 1 else 0 end), 0) as shop_count
+        from task_job
+        where task_status = 0;
+    </select>
 </mapper>

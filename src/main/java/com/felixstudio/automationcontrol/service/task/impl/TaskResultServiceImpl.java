@@ -1,6 +1,5 @@
 package com.felixstudio.automationcontrol.service.task.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.felixstudio.automationcontrol.entity.task.TaskResults;
 import com.felixstudio.automationcontrol.mapper.task.TaskResultMapper;
@@ -21,13 +20,8 @@ public class TaskResultServiceImpl extends ServiceImpl<TaskResultMapper,TaskResu
     public boolean checkTaskKey(String taskKey) {
         // 检查任务key是否已经存在了 任务key自定义一个 例如预售的就是 presale_{presaleId}_{shopId}_{goodsId} 来检查这个店铺下的任务是否已经执行过了 根据任务状态类获取
         try {
-            TaskResults results = taskResultMapper.selectOne(new LambdaQueryWrapper<TaskResults>()
-                    .eq(TaskResults::getTaskKey,taskKey),true);
-            if(results!=null && results.getStatus() == -1){
-                return false;
-            }else{
-                return true;
-            }
+            Integer findTask = taskResultMapper.findByKey(taskKey);
+            return findTask <= 0;
         }catch (Exception e){
             throw new IndexOutOfBoundsException("该关键Key超出了预期数量!");
         }
@@ -36,7 +30,8 @@ public class TaskResultServiceImpl extends ServiceImpl<TaskResultMapper,TaskResu
     }
 
     @Override
-    public int submit(TaskResults taskResults) {
-        return taskResultMapper.insert(taskResults);
+    public Long submit(TaskResults taskResults) {
+        taskResultMapper.insert(taskResults);
+        return taskResults.getId();
     }
 }

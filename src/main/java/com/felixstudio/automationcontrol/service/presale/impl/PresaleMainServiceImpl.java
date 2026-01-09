@@ -10,6 +10,7 @@ import com.felixstudio.automationcontrol.dto.presale.PresaleMainDTO;
 import com.felixstudio.automationcontrol.dto.presale.PresaleMainQueryDTO;
 import com.felixstudio.automationcontrol.dto.presale.PresaleMainTaskInfoDTO;
 import com.felixstudio.automationcontrol.entity.presale.PresaleMain;
+import com.felixstudio.automationcontrol.entity.presale.erp.PresaleErpCode;
 import com.felixstudio.automationcontrol.entity.task.TaskJob;
 import com.felixstudio.automationcontrol.mapper.presale.PresaleMainMapper;
 import com.felixstudio.automationcontrol.service.presale.PresaleMainService;
@@ -17,6 +18,7 @@ import com.felixstudio.automationcontrol.service.presale.erp.PresaleErpCodeServi
 import com.felixstudio.automationcontrol.service.task.TaskJobService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.stream.Task;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -115,6 +117,45 @@ public class PresaleMainServiceImpl extends ServiceImpl<PresaleMainMapper, Presa
     public Object checkPresaleMain(List<PresaleMain> presaleMains) {
 
         return this.getBaseMapper().checkPresaleMain(presaleMains);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean deletePresaleMainByPresaleId(String presaleId) {
+        Long id = Long.parseLong(presaleId);
+        // 查询关联的presale_erp_code表中的数据
+        List<PresaleErpCode> erpCodeList = this.presaleErpCodeService.getBaseMapper().selectList(
+                new LambdaQueryWrapper<PresaleErpCode>()
+                        .eq(PresaleErpCode::getPresaleId, id)
+        );
+        if(!erpCodeList.isEmpty()){
+            List<String> erpCodeIds = new ArrayList<>();
+            for(PresaleErpCode erpCode : erpCodeList){
+                erpCodeIds.add(erpCode.getId().toString());
+            }
+            // 批量删除
+            taskJobService.remove(
+                    new LambdaQueryWrapper<TaskJob>()
+                            .eq(TaskJob::getRefType,"erp")
+                            .in(TaskJob::getRefId,erpCodeIds)
+            );
+        }
+
+        // 删除presale_erp_code表中的数据
+        presaleErpCodeService.getBaseMapper().delete(
+                new LambdaQueryWrapper<PresaleErpCode>()
+                        .eq(PresaleErpCode::getPresaleId, id)
+        );
+        // 删除task_job表中关联的任务
+        taskJobService.getBaseMapper().delete(
+                new LambdaQueryWrapper<TaskJob>()
+                        .eq(TaskJob::getRefType, "presale_main")
+                        .eq(TaskJob::getRefId, presaleId)
+        );
+        // 删除presale_main表中的数据
+        this.getBaseMapper().deleteById(id);
+
+        return true;
     }
 
 

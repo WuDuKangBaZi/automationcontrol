@@ -3,15 +3,18 @@ package com.felixstudio.automationcontrol.service.auth;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.felixstudio.automationcontrol.dto.auth.UsersDTO;
 import com.felixstudio.automationcontrol.entity.auth.Users;
+import com.felixstudio.automationcontrol.entity.depart.Departments;
 import com.felixstudio.automationcontrol.entity.depart.UserDepartments;
 import com.felixstudio.automationcontrol.mapper.auth.UsersMapper;
 import com.felixstudio.automationcontrol.mapper.dept.UserDepartmentsMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class UsersService {
     private final UsersMapper userMapper;
@@ -104,5 +107,11 @@ public class UsersService {
         return userMapper.selectOne(
                 new LambdaQueryWrapper<Users>().eq(Users::getAccount, account)
         );
+    }
+
+    public String getDepartmentNameByUserId(String userId) {
+        Departments departments = this.userMapper.getUserDepartmentByUserId(userId);
+        log.info(departments.toString());
+        return departments != null ? departments.getDeptName() : null;
     }
 }

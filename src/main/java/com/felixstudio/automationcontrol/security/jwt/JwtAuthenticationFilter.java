@@ -36,17 +36,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain)
             throws ServletException, IOException {
         String path = request.getServletPath();
-        log.info("path={}", path);
+//        log.info("path={}", path);
         List<String> whiteList = List.of(
                 "/api/auth/login",
                 "/uploads/",
                 "/images/",
                 "/api/auth/refreshToken",
                 "/api/dingtalk/send",
-                "/api/dingtalk/sendWebHook"
+                "/api/dingtalk/sendWebHook",
+                "/ws/",
+                "/api/robot/heartbeat"
         );
         boolean isWhiteListed = whiteList.stream().anyMatch(path::startsWith);
         if(isWhiteListed || path.contains("/pub/") || path.contains("/verify/")) {
+//            log.info("白名单路径，无需验证");
             filterChain.doFilter(request, response);
             return;
         }

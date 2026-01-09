@@ -7,16 +7,19 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.felixstudio.automationcontrol.dto.presale.erp.ErpCodesDTO;
 import com.felixstudio.automationcontrol.entity.presale.PresaleMain;
 import com.felixstudio.automationcontrol.entity.presale.erp.PresaleErpCode;
+import com.felixstudio.automationcontrol.entity.shop.ShopInfo;
 import com.felixstudio.automationcontrol.entity.task.TaskJob;
 import com.felixstudio.automationcontrol.mapper.presale.erp.PresaleErpCodeMapper;
 import com.felixstudio.automationcontrol.service.presale.PresaleMainService;
 import com.felixstudio.automationcontrol.service.presale.erp.PresaleErpCodeService;
 import com.felixstudio.automationcontrol.service.shop.ShopInfoService;
 import com.felixstudio.automationcontrol.service.task.TaskJobService;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.DateFormat;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -29,10 +32,13 @@ public class PresaleErpCodeServiceImpl extends ServiceImpl<PresaleErpCodeMapper,
     private final ShopInfoService shopInfoService;
     private final PresaleMainService presaleMainService;
 
-    public PresaleErpCodeServiceImpl(TaskJobService taskJobService, ShopInfoService shopInfoService, PresaleMainService presaleMainService) {
+    private final StringRedisTemplate stringRedisTemplate;
+
+    public PresaleErpCodeServiceImpl(TaskJobService taskJobService, ShopInfoService shopInfoService, PresaleMainService presaleMainService, StringRedisTemplate stringRedisTemplate) {
         this.taskJobService = taskJobService;
         this.shopInfoService = shopInfoService;
         this.presaleMainService = presaleMainService;
+        this.stringRedisTemplate = stringRedisTemplate;
     }
     @Transactional
     @Override
@@ -66,6 +72,7 @@ public class PresaleErpCodeServiceImpl extends ServiceImpl<PresaleErpCodeMapper,
         );
         for (PresaleErpCode presaleErpCode : erpCodeList) {
             List<TaskJob> erpTaskJob = getTaskJob(presaleErpCode,allErpCodes,presaleMain.getHandlingMethod(),presaleMain.getPresaleEndTime());
+            // 更新redis中的任务计数器
             taskJobService.saveBatch(erpTaskJob);
         }
         return erpCodeList.size();
@@ -88,11 +95,19 @@ public class PresaleErpCodeServiceImpl extends ServiceImpl<PresaleErpCodeMapper,
         }
         return dtoList;
     }
-
+    public String getPresaleEndTimeFormatted(LocalDate presaleEndTime) {
+        return presaleEndTime == null
+                ? null
+                : presaleEndTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+    }
     private List<TaskJob> getTaskJob(PresaleErpCode presaleErpCode, String allErpCodes, String handlingMethod, LocalDate presaleEndTime) {
         // 此处需要独立为每个店铺都创建一个任务
         List<TaskJob> jobs = new ArrayList<>();
-        shopInfoService.getShopsByType("预售").forEach(shop -> {
+        List< ShopInfo > shopInfos = shopInfoService.getShopsByType("预售");
+        String monitorKey = "预售.ERP数据处理";
+        stringRedisTemplate.opsForSet().add(monitorKey,shopInfos.stream().map(ShopInfo::getShopName).toArray(String[]::new));
+        stringRedisTemplate.expire(monitorKey, Duration.ofDays(7)); // 设置过期时间为7天
+        shopInfos.forEach(shop -> {
             TaskJob erpTaskJob = new TaskJob();
             erpTaskJob.setTaskType("预售.ERP数据处理");
             erpTaskJob.setRefType("erp");
@@ -103,7 +118,7 @@ public class PresaleErpCodeServiceImpl extends ServiceImpl<PresaleErpCodeMapper,
             params.put("erpName", presaleErpCode.getErpName());
             params.put("presaleId", presaleErpCode.getPresaleId());
             params.put("handlingMethod", handlingMethod);
-            params.put("presaleEndTime", presaleEndTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+            params.put("presaleEndTime", getPresaleEndTimeFormatted(presaleEndTime));
             params.put("allErpCodes", allErpCodes);
             erpTaskJob.setTaskParams(params);
             erpTaskJob.setTaskStatus(0);

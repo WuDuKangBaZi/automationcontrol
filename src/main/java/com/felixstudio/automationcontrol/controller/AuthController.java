@@ -71,9 +71,11 @@ public class AuthController {
         }
         List<String> roles = userRolesService.getRolesByUserId(user.getId());
         List<String> permissions = permissionService.getPermissionsByUserId(user.getId());
+        String groupName = userService.getDepartmentNameByUserId(user.getAccount());
         UserInfoDTO userDTO = new UserInfoDTO().forEntity(user);
         userDTO.setRoles(roles);
         userDTO.setPermissions(permissions);
+        userDTO.setGroupName(groupName);
         return ApiResponse.success(userDTO);
     }
 

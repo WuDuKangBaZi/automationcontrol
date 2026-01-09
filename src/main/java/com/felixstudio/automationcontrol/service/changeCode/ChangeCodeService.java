@@ -12,4 +12,6 @@ public interface ChangeCodeService extends IService<ChangeCode> {
     void batchInsertChangeCode(List<ChangeCode> changeCodeList);
 
     IPage<ChangeCodeDTO> queryByDTO(ChangeCodeQueryDTO changeCodeQueryDTO);
+
+    List<?> queryDetailsById(Long id);
 }
