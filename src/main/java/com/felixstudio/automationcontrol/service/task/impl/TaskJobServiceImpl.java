@@ -48,29 +48,35 @@ public class TaskJobServiceImpl extends ServiceImpl<TaskJobMapper, TaskJob> impl
         queryWrapper.last("for update skip locked limit 1");
         List<TaskJob> list = this.baseMapper.selectList(queryWrapper);
         if(list == null || list.isEmpty()){
-            if (shopInfo != null && Objects.equals(shopInfo.getBusinessType(), "预售")) {
-                String monitorKey = "预售.ERP数据处理";
-                Long removeCount = stringRedisTemplate.opsForSet().remove(monitorKey, shopInfo.getShopName());
-                if(removeCount != null &&removeCount > 0){
-                    Long remaining = stringRedisTemplate.opsForSet().size(monitorKey);
-                    if(remaining != null && remaining == 0){
-                        // 所有店铺的任务都被清空了
-                        //todo 使用ws向前端发起消息通知
-                        JSONObject payload = new JSONObject();
-                        payload.put("messageType", "info");
-                        payload.put("message", "所有预售店铺的ERP数据处理任务已完成");
-                        payload.put("title", "预售任务完成通知");
-                        groupNotificationService.sendToGroup("运营部", payload);
-                    }
-                }
-
+            if (shopInfo != null) {
+                checkAllTask(shopInfo.getShopName(),taskType);
             }
             throw new NullPointerException("没有找到符合条件的任务");
         }
         TaskJob taskJob = list.get(0);
+        // 校验 如果是需要店铺的数据没有传入店铺则返回error
+        if(taskJob.getShopId() != null && shopInfo == null){
+            throw new IllegalArgumentException("任务需要店铺信息，但未提供店铺信息");
+        }
         taskJob.setTaskStatus(1);
         this.baseMapper.updateById(taskJob);
         return taskJob;
+    }
+    private void checkAllTask(String shopName,String taskType){
+        if(shopName != null){
+            Long removeCount = stringRedisTemplate.opsForSet().remove(taskType,shopName);
+            if(removeCount != null && removeCount > 0){
+                Long remaining = stringRedisTemplate.opsForSet().size(taskType);
+                if(remaining != null && remaining == 0){
+                    // todo ws发送信息到前端 此处暂时仅用于运营部
+                    JSONObject payload = new JSONObject();
+                    payload.put("messageType", "info");
+                    payload.put("message", "所有店铺的"+taskType+"任务已完成");
+                    payload.put("title", taskType+"任务完成通知");
+                    groupNotificationService.sendToGroup("运营部", payload);
+                }
+            }
+        }
     }
     @Override
     public List<PresaleTaskProgress> queryPresaleProgress(){

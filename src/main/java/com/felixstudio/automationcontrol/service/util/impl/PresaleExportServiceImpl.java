@@ -26,7 +26,7 @@ public class PresaleExportServiceImpl extends ServiceImpl<PresaleExportMapper, P
     public List<?> exportPresaleMainExcel(PresaleExportQueryDTO presaleExportQueryDTO) {
         if(Objects.equals(presaleExportQueryDTO.getExportType(), "明细")){
             // 查询明细数据并导出
-            return presaleExportMapper.exportPresaleMainExcel(presaleExportQueryDTO,serverPrefix);
+            return presaleExportMapper.exportPresaleMainExcel(presaleExportQueryDTO);
         } else if (Objects.equals(presaleExportQueryDTO.getExportType(),"汇总")) {
             return presaleExportMapper.exportPresaleSummaryExcel(presaleExportQueryDTO);
         }else{

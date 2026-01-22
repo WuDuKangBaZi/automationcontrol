@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface PresaleExportMapper extends BaseMapper<PresaleDetailsExportDTO> {
-    List<PresaleDetailsExportDTO> exportPresaleMainExcel(@Param("presaleExportQueryDTO") PresaleExportQueryDTO presaleExportQueryDTO, @Param("serverPrefix") String serverPrefix);
+    List<PresaleDetailsExportDTO> exportPresaleMainExcel(@Param("presaleExportQueryDTO") PresaleExportQueryDTO presaleExportQueryDTO);
 
     List<PresaleSummaryDTO> exportPresaleSummaryExcel(@Param("presaleExportQueryDTO")  PresaleExportQueryDTO presaleExportQueryDTO);
 }

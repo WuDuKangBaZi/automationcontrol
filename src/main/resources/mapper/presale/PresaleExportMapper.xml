@@ -33,7 +33,7 @@
         array_to_string(
         coalesce(
         (
-        select array_agg(concat(#{serverPrefix}, tlf2.file_path))
+        select array_agg(concat('https://api.presale.csdp.work', tlf2.file_path))
         from task_log_files tlf2
         where tlf2.task_id = tr.id
         ),
