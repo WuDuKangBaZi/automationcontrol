@@ -55,7 +55,7 @@ public class TaskJobServiceImpl extends ServiceImpl<TaskJobMapper, TaskJob> impl
         }
         TaskJob taskJob = list.get(0);
         // 校验 如果是需要店铺的数据没有传入店铺则返回error
-        if(Objects.equals(taskJob.getTaskStatus(),1) && shopInfo == null){
+        if(taskJob.getShopId() != null && shopInfo == null){
             throw new IllegalArgumentException("任务需要店铺信息，但未提供店铺信息");
         }
         taskJob.setTaskStatus(1);
