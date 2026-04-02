@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.AccountNotFoundException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -66,8 +67,12 @@ public class InvoiceOperationHistoryServiceimpl extends ServiceImpl<InvoiceOpera
         if (queryDTO.getCreatedAt() != null) {
             queryWrapper.eq(InvoiceOperationHistory::getCreatedAt, queryDTO.getCreatedAt());
         }
+        if (queryDTO.getStatus() != null) {
+            queryWrapper.eq(InvoiceOperationHistory::getStatus, queryDTO.getStatus());
+
+        }
         Page<InvoiceOperationHistory> page = new Page<>(queryDTO.getPageNo(), queryDTO.getPageSize());
-        return this.page(page,queryWrapper);
+        return this.page(page, queryWrapper);
     }
 
     @SneakyThrows
@@ -86,9 +91,9 @@ public class InvoiceOperationHistoryServiceimpl extends ServiceImpl<InvoiceOpera
                     break;
                 case "聚水潭验证":
                     history.setVerifiedInJstTime(LocalDateTime.now());
-                    boolean invoiceB =  Objects.equals(updateDAO.getResult(), "需要开票");
+                    boolean invoiceB = Objects.equals(updateDAO.getResult(), "需要开票");
                     history.setInvoicedB(invoiceB);
-                    if(!invoiceB){
+                    if (!invoiceB) {
                         history.setStatus(1);
                     }
                     break;
@@ -112,5 +117,27 @@ public class InvoiceOperationHistoryServiceimpl extends ServiceImpl<InvoiceOpera
             log.info(history.toString());
             this.getBaseMapper().updateById(history);
         }
+    }
+
+    @Override
+    public Object setManual(List<String> orderNos) {
+        List<String> req = new ArrayList<>();
+        for (String order : orderNos){
+            LambdaQueryWrapper<InvoiceOperationHistory> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(InvoiceOperationHistory::getOrderNo, order);
+            List<InvoiceOperationHistory> histories = this.list(queryWrapper);
+            if (histories.isEmpty()) {
+                log.warn("未找到订单号为 {} 的发票操作记录，无法设置为人工处理", order);
+                req.add("订单号 " + order + " 未找到发票操作记录");
+                continue;
+            }
+            for (InvoiceOperationHistory history : histories) {
+                history.setStatus(-1); // -1表示人工处理
+                this.updateById(history);
+                req.add("订单号 " + order + " 的发票操作记录已设置为人工处理");
+                log.info("订单号 {} 的发票操作记录已设置为人工处理", order);
+            }
+        }
+        return req;
     }
 }

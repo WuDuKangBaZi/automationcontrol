@@ -54,6 +54,11 @@ public class InvoiceOperationHistoryController {
         return ApiResponse.success(invoiceOperationHistoryService.queryByDTO(queryDTO));
     }
 
+    @PostMapping("/setManual")
+    public ApiResponse<?> setManual(@RequestBody List<String> orderNos){
+        //
+        return ApiResponse.success(invoiceOperationHistoryService.setManual(orderNos));
+    }
     /**
      * 根据平台和店铺来判断是否还存在未完成的发票操作记录
      *

@@ -11,7 +11,7 @@
           and i.platform = #{platform}
           and (i.verified_in_jst_time is null or i.invoiced_time is null or i.registered_sendback_time is null or
                i.sendback_done_time is null or i.mark_in_jst_time is null)
-        and i.status = 0;
+        and i.invoiced_b = true;
     </select>
     <select id="getNextByStep"
             resultType="com.felixstudio.automationcontrol.entity.invoice.InvoiceOperationHistory">

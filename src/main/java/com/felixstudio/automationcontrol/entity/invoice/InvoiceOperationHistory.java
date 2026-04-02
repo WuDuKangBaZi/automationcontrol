@@ -75,7 +75,8 @@ public class InvoiceOperationHistory {
      * 执行状态
      * 0-处理中 (默认)
      * 1-全部完成
-     * 2-异常失败 (RPA读取时应过滤掉此状态的订单)
+     * -1-标记为人工处理
+     * 2 -失败
      */
     @TableField("status")
     private Integer status;

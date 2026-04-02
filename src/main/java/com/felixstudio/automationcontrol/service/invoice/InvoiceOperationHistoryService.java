@@ -24,4 +24,6 @@ public interface InvoiceOperationHistoryService extends IService<InvoiceOperatio
     IPage<InvoiceOperationHistory> queryByDTO(InvoiceQueryDTO queryDTO);
 
     void updateByStep(invoiceUpdateDAO updateDAO);
+
+    Object setManual(List<String> orderNos);
 }

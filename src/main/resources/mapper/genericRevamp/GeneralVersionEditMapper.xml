@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.felixstudio.automationcontrol.mapper.genericRevamp.GeneralVersionEditMapper">
+    <resultMap id="GenericDAOMap" type="com.felixstudio.automationcontrol.dao.generic.GenericDAO" autoMapping="true">
+        <result column="operation_remark" property="operationRemark"
+                typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+    </resultMap>
+    <update id="updateOpertaionRemarkById">
+        update general_version_edit
+        set operation_remark = #{operationRemark, typeHandler=com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler}::jsonb
+        where id = #{id};
+    </update>
+    <select id="queryByDto" resultMap="GenericDAOMap">
+        select gve.*,
+               count(tj.id)                                         as task_total,
+               sum(case when tj.task_status = 0 then 1 else 0 end)  as task_pending,
+               sum(case when tj.task_status = 1 then 1 else 0 end)  as task_running,
+               sum(case when tj.task_status = 2 then 1 else 0 end)  as task_success,
+               sum(case when tj.task_status = -1 then 1 else 0 end) as task_fail
+        from general_version_edit gve
+                 left join task_job tj on gve.id = tj.ref_id
+        <where>
+            <if test="genericQueryDTO.configDate != null">
+                and gve.date = #{genericQueryDTO.configDate}
+            </if>
+        <if test=" genericQueryDTO.fileName != null and genericQueryDTO.fileName != '' ">
+            and gve.file_name like concat('%', #{genericQueryDTO.fileName}, '%')
+        </if>
+        <if test="genericQueryDTO.productName != null and genericQueryDTO.productName != ''">
+            and gve.goods_name like concat('%', #{genericQueryDTO.productName}, '%')
+        </if>
+        </where>
+        group by gve.id, date, editor, file_name, new_code, goods_name, new_price, type, remark, gve.created_at, gve.updated_at,
+        operation_remark
+        order by gve.created_at desc
+    </select>
+</mapper>

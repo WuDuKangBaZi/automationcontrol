@@ -37,6 +37,7 @@ public class VerifyService {
     public String sendSmSCode(String flowName, String verifyPhone, String shortName, List<String> atMobiles) {
         // 流程名称、手机号、发送到指定的ID的群聊 该ID在网页端可以查询到
         String businessId = UUID.randomUUID().toString();
+        log.info("short_name : =>{}",shortName);
         // 根据shortName查询到对应的chanelId
         List<ChatGroupInfo> list = chatGroupInfoMapper.selectByMap(Map.of("short_name", shortName));
         Optional<ChatGroupInfo> opt = list.stream().findFirst();

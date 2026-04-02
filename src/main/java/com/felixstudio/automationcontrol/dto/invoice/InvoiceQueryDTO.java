@@ -10,6 +10,7 @@ public class InvoiceQueryDTO extends PagerDTO {
     private String orderNo;
     private String platform;
     private String shopName;
+    private String status;
     private LocalDateTime createdAt;
     private String step;
 }

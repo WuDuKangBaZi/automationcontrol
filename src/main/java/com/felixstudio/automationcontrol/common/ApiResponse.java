@@ -2,6 +2,12 @@ package com.felixstudio.automationcontrol.common;
 
 import lombok.Data;
 
+/**
+ * API响应
+ *
+ * @author FelixYu
+ * @date 2026-03-11
+ */
 @Data
 public class ApiResponse <T> {
     private int code;
