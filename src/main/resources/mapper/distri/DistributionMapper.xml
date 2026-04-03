@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.felixstudio.automationcontrol.mapper.distri.DistributionMapper">
+    <resultMap id="DistributionDAOMap" type="com.felixstudio.automationcontrol.dao.distri.DistributionDAO"
+               autoMapping="true">
+        <result column="store" property="store"
+                typeHandler="com.felixstudio.automationcontrol.config.mybatis.StringArrayTypeHandler"/>
+        <result column="store_id" property="storeId"
+                typeHandler="com.felixstudio.automationcontrol.config.mybatis.IntegerArrayTypeHandler"/>
+    </resultMap>
+    <select id="queryByDto" resultMap="DistributionDAOMap">
+        select * from distribution d
+        <where>
+            <if test="queryDTO.keyword != null and queryDTO.keyword != ''">
+                and d.keyword like concat('%',#{queryDTO.getKeyword()},'%')
+            </if>
+            <if test="queryDTO.configDate != null">
+                and d.config_date = #{queryDTO.getConfigDate()}
+            </if>
+            <if test="queryDTO.initTime != null">
+                and d.init_time = #{queryDTO.getInitTime()}
+            </if>
+        </where>
+    </select>
+
+</mapper>

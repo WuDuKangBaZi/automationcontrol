@@ -112,6 +112,6 @@ public class UsersService {
     public String getDepartmentNameByUserId(String userId) {
         Departments departments = this.userMapper.getUserDepartmentByUserId(userId);
         log.info(departments.toString());
-        return departments != null ? departments.getDeptName() : null;
+        return departments.getDeptName();
     }
 }
